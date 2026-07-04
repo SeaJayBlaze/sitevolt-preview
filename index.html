@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sitevolt Marketing: A Big-Brand Website. Live in 14 Days. For $1.</title>
+  <meta name="description" content="We build your whole website for $1: custom, live in 14 days, hosting and updates included from $147/mo billed quarterly. Cancel anytime. 5 builds a month." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23f4ecdf'/%3E%3Cpath d='M19 3 L8 18 L14 18 L10 29 L24 13 L17 13 L23 3 Z' fill='%231d63e3'/%3E%3C/svg%3E" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Sitevolt Marketing: A Big-Brand Website. Live in 14 Days. For $1." />
+  <meta property="og:description" content="We build your whole website for $1: custom, live in 14 days, hosting and updates included. Cancel anytime." />
+  <!-- NOTE: og:image must become an absolute URL (https://yourdomain/assets/og-image.jpg) at deploy -->
+  <meta property="og:image" content="assets/og-image.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Courier+Prime:wght@400;700&family=Kalam:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=14" />
+  <!-- The torn-edge scans + blueprint border tiles are structural chrome used
+       at every band boundary (strip backgrounds AND the rip-borders carry-up
+       masks). Preloading them closes the race where a tear strip paints but
+       its column carry-up mask hasn't arrived yet — that window renders the
+       blueprint columns cut off in a straight line instead of ripped. -->
+  <link rel="preload" as="image" href="assets/torn-cream-paper.png" />
+  <link rel="preload" as="image" href="assets/torn-cream-paper-flipped.png" />
+  <link rel="preload" as="image" href="assets/torn-cream-paper-inverted.png" />
+  <link rel="preload" as="image" href="assets/blueprint-border-left.webp" />
+  <link rel="preload" as="image" href="assets/blueprint-border-right.webp" />
+</head>
+<body>
+  <!-- ============ URGENCY BAR (live month-end countdown) ============ -->
+  <!-- Full-width status strip. The clock is REAL (counts to the close of the
+       active month), so it can't drift into invented scarcity. Whole bar links
+       to the offer + carries data-checkout, but reads as a banner, not a button. -->
+  <!-- No aria-live here on purpose: the clock re-renders every second, and a
+       live region would make screen readers announce every tick. -->
+  <a class="urgency" href="#final-cta" data-checkout>
+    <span class="urgency__inner">
+      <span class="urgency__label" data-countdown-label>July builds close in</span>
+      <span class="urgency__clock" data-countdown>
+        <span class="urgency__unit"><b data-cd="days">00</b><i>D</i></span>
+        <span class="urgency__unit"><b data-cd="hours">00</b><i>H</i></span>
+        <span class="urgency__unit"><b data-cd="mins">00</b><i>M</i></span>
+        <span class="urgency__unit"><b data-cd="secs">00</b><i>S</i></span>
+      </span>
+    </span>
+  </a>
+
+  <!-- ============ TOPBAR ============ -->
+  <header id="topbar" class="topbar">
+    <div class="topbar__inner">
+      <a class="wordmark" href="#hero">
+        <span class="wordmark__name">SITEVOLT</span>
+        <span class="wordmark__sub">MARKETING</span>
+      </a>
+      <nav class="topbar__nav">
+        <a href="#process" class="topbar__link">HOW IT WORKS</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+  <!-- ============ HERO ============ -->
+  <section id="hero" class="section hero">
+    <div class="container hero__grid">
+      <div class="hero__copy">
+        <p class="eyebrow hero__eyebrow">Big Brand Built</p>
+        <h1 class="hero__title hero__title--offer"><span class="hero__line1">WEBSITES LIVE IN</span><br><span class="hero__line2">14 DAYS FOR <span class="hero__ul">ONLY&nbsp;$1</span></span></h1>
+        <!-- One idea per zone: the H1 owns "14 days" and "$1", the bullets own
+             the proof, so the sub only has to carry "custom" + the risk reversal.
+             The old middle sentence ("we build... switch it on in 14 days")
+             repeated the H1 and pushed the CTA two lines further down on phones. -->
+        <p class="hero__sub">The kind of website you'd expect from a brand 10x your size:
+          custom-built around your business, your words, your photos, your domain. You pay
+          <strong>$1 today</strong>, and not another cent until it's live and you love it.</p>
+        <ul class="hero__bullets">
+          <li><span class="tick" aria-hidden="true"></span><span>Fee: <s>$8,500</s> $1</span></li>
+          <li><span class="tick" aria-hidden="true"></span>Live in 14 Days</li>
+          <li><span class="tick" aria-hidden="true"></span>Cancel Anytime</li>
+          <li><span class="tick" aria-hidden="true"></span>SEO Optimized</li>
+        </ul>
+        <div class="hero__cta">
+          <a href="#final-cta" class="pill hero__pill" data-spot-cta data-checkout>See What $1 Gets You</a>
+          <svg class="hero__arrow" viewBox="0 0 120 80" aria-hidden="true">
+            <path d="M112 8 C108 38 84 58 30 64" fill="none"
+                  stroke="var(--ink)" stroke-width="4.5" stroke-linecap="round"/>
+            <path d="M52 48 L24 65 L54 76" fill="none" stroke="var(--ink)"
+                  stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <p class="hero__trust hero__trust--meter"><span class="spot-meter" role="img" data-spot-meter aria-label="Limited build spots each month"><span class="spot"></span><span class="spot"></span><span class="spot"></span><span class="spot"></span><span class="spot"></span></span><strong data-spot-phrase>Only 5 builds a month</strong>.</p>
+        <p class="hero__why">Why 5? Any more, the 14-day promise breaks.</p>
+      </div>
+      <div class="hero__art">
+        <img src="assets/sitevolt-hero-illustration-right.webp" alt="" width="1001" height="938" fetchpriority="high" />
+      </div>
+    </div>
+    <img class="hero__rip" src="assets/hero-page-rip-charcoal.png" alt="" aria-hidden="true" width="2758" height="300" />
+  </section>
+
+  <!-- ============ TRUSTED ============ -->
+  <section id="trusted" class="section trusted torn-bottom torn--cream">
+    <p class="trusted__eyebrow"><span class="ransom" role="text" aria-label="Receipts"><span>R</span><span>E</span><span>C</span><span>E</span><span>I</span><span>P</span><span>T</span><span>S</span></span> <span class="scribble">over</span> CLAIMS</p>
+    <div class="trusted__band">
+      <!-- scrolling proof banner: the track holds two identical copies of the
+           logo list and slides left by exactly one copy's width, looping
+           seamlessly. The second copy is decorative (aria-hidden, empty alt).
+           No loading="lazy" here: logos sliding into view mid-scroll would
+           pop in late. -->
+      <div class="trusted__marquee">
+        <div class="trusted__track">
+          <ul class="trusted__logos">
+            <li class="tlogo"><img src="assets/logos/cultures-for-health.png" alt="Cultures for Health" decoding="async" width="390" height="34"></li>
+            <li class="tlogo tlogo--wine"><img src="assets/logos/usual-wines.svg" alt="Usual Wines" decoding="async" width="132" height="28"></li>
+            <li class="tlogo tlogo--valley"><img src="assets/logos/valley-food-storage.png" alt="Valley Food Storage" decoding="async" width="297" height="71"></li>
+            <li class="tlogo tlogo--cuddle"><img src="assets/logos/cuddle-clones.png" alt="Cuddle Clones" decoding="async" width="399" height="180"></li>
+            <li class="tlogo tlogo--amg"><img src="assets/logos/american-monument-granite.png" alt="American Monument &amp; Granite Co." decoding="async" width="710" height="134"></li>
+          </ul>
+          <ul class="trusted__logos" aria-hidden="true">
+            <li class="tlogo"><img src="assets/logos/cultures-for-health.png" alt="" decoding="async" width="390" height="34"></li>
+            <li class="tlogo tlogo--wine"><img src="assets/logos/usual-wines.svg" alt="" decoding="async" width="132" height="28"></li>
+            <li class="tlogo tlogo--valley"><img src="assets/logos/valley-food-storage.png" alt="" decoding="async" width="297" height="71"></li>
+            <li class="tlogo tlogo--cuddle"><img src="assets/logos/cuddle-clones.png" alt="" decoding="async" width="399" height="180"></li>
+            <li class="tlogo tlogo--amg"><img src="assets/logos/american-monument-granite.png" alt="" decoding="async" width="710" height="134"></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- blueprint side borders frame this whole cream band (dialed-in → did-you-know) -->
+  <div class="bp-band">
+  <!-- continues the border columns up over the trusted panel's cream tear,
+       so the blueprints rip away with the page -->
+  <span class="bp-band__rip-borders" aria-hidden="true"></span>
+
+  <!-- ============ DIALED-IN ============ -->
+  <section id="dialed-in" class="section dialed-in">
+    <div class="container dialed__wrap">
+      <div class="dialed__head">
+        <svg class="dialed__spark dialed__spark--left" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 2 L23 15 M38 14 L26 20 M30 36 L23 25 M6 32 L15 23 M2 10 L14 17" fill="none" stroke="#2f6bff" stroke-width="4" stroke-linecap="round"/></svg>
+        <svg class="dialed__spark dialed__spark--top" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 2 L23 15 M38 14 L26 20 M30 36 L23 25 M6 32 L15 23 M2 10 L14 17" fill="none" stroke="#2f6bff" stroke-width="4" stroke-linecap="round"/></svg>
+        <h2 class="dialed__title">UNPLUG YOUR<br>OLD WEBSITE</h2>
+        <p class="dialed__kicker">PLUG IN A <span class="dialed__kicker-ul">BIG BRAND</span> SITE <br class="dialed__kicker-br">THAT ACTUALLY SELLS</p>
+      </div>
+      <div class="dialed__bubble">
+        <span class="quote-mark quote-mark--open" aria-hidden="true">&ldquo;</span>
+        <p class="dialed__body">Your customers talk you up. <br class="dialed__body-br">Your website doesn't back them up.</p>
+        <p class="dialed__body dialed__body--turn">We fix that in 14 days. A custom site, written for you, as good as your reputation. Agencies charge <s>$8,500</s>. <strong>We charge a dollar.</strong></p>
+        <span class="quote-mark quote-mark--close" aria-hidden="true">&rdquo;</span>
+        <a href="#final-cta" class="pill dialed__pill" data-checkout>SEE WHAT $1 GETS YOU</a>
+        <svg class="dialed__pill-swash" viewBox="0 0 180 14" aria-hidden="true"><path d="M6 5 C56 2 130 3 174 5" fill="none" stroke="#2f6bff" stroke-width="4" stroke-linecap="round"/><path d="M36 11 C84 8 124 9 150 10" fill="none" stroke="#2f6bff" stroke-width="3.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="dialed__art">
+        <img src="assets/sitevolt-services-portrait.webp" alt="" width="914" height="885" loading="lazy" decoding="async" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ REAL RESULTS ============ -->
+  <section id="real-results" class="section real-results">
+    <div class="container">
+      <h2 class="rr__title">REAL BIG BRANDS, REAL BIG <span class="rr__ul">RESULTS.</span></h2>
+    </div>
+    <!-- banner marquee: the track holds two identical phone sets and slides
+         exactly one set-width before looping, so the row drifts left forever
+         with no visible seam — phones exit the left edge and come back around
+         the right. Full-bleed sibling of .container so it spans the viewport.
+         All placeholder art → the whole strip is aria-hidden. -->
+    <div class="rr__marquee" aria-hidden="true">
+      <div class="rr__track">
+        <div class="rr__set">
+          <figure class="rr__phone"><div class="rr__screen"><span class="rr__ph-notch"></span><span class="rr__ph-block"></span><span class="rr__ph-line rr__ph-line--lg"></span><span class="rr__ph-line"></span><span class="rr__ph-line rr__ph-line--sm"></span><span class="rr__ph-btn"></span></div></figure>
+          <figure class="rr__phone"><div class="rr__screen"><span class="rr__ph-notch"></span><span class="rr__ph-block"></span><span class="rr__ph-line rr__ph-line--lg"></span><span class="rr__ph-line"></span><span class="rr__ph-line rr__ph-line--sm"></span><span class="rr__ph-btn"></span></div></figure>
+          <figure class="rr__phone"><div class="rr__screen"><span class="rr__ph-notch"></span><span class="rr__ph-block"></span><span class="rr__ph-line rr__ph-line--lg"></span><span class="rr__ph-line"></span><span class="rr__ph-line rr__ph-line--sm"></span><span class="rr__ph-btn"></span></div></figure>
+          <figure class="rr__phone"><div class="rr__screen"><span class="rr__ph-notch"></span><span class="rr__ph-block"></span><span class="rr__ph-line rr__ph-line--lg"></span><span class="rr__ph-line"></span><span class="rr__ph-line rr__ph-line--sm"></span><span class="rr__ph-btn"></span></div></figure>
+          <figure class="rr__phone"><div class="rr__screen"><span class="rr__ph-notch"></span><span class="rr__ph-block"></span><span class="rr__ph-line rr__ph-line--lg"></span><span class="rr__ph-line"></span><span class="rr__ph-line rr__ph-line--sm"></span><span class="rr__ph-btn"></span></div></figure>
+          <figure class="rr__phone"><div class="rr__screen"><span class="rr__ph-notch"></span><span class="rr__ph-block"></span><span class="rr__ph-line rr__ph-line--lg"></span><span class="rr__ph-line"></span><span class="rr__ph-line rr__ph-line--sm"></span><span class="rr__ph-btn"></span></div></figure>
+          <figure class="rr__phone"><div class="rr__screen"><span class="rr__ph-notch"></span><span class="rr__ph-block"></span><span class="rr__ph-line rr__ph-line--lg"></span><span class="rr__ph-line"></span><span class="rr__ph-line rr__ph-line--sm"></span><span class="rr__ph-btn"></span></div></figure>
+          <figure class="rr__phone"><div class="rr__screen"><span class="rr__ph-notch"></span><span class="rr__ph-block"></span><span class="rr__ph-line rr__ph-line--lg"></span><span class="rr__ph-line"></span><span class="rr__ph-line rr__ph-line--sm"></span><span class="rr__ph-btn"></span></div></figure>
+        </div>
+        <div class="rr__set">
+          <figure class="rr__phone"><div class="rr__screen"><span class="rr__ph-notch"></span><span class="rr__ph-block"></span><span class="rr__ph-line rr__ph-line--lg"></span><span class="rr__ph-line"></span><span class="rr__ph-line rr__ph-line--sm"></span><span class="rr__ph-btn"></span></div></figure>
+          <figure class="rr__phone"><div class="rr__screen"><span class="rr__ph-notch"></span><span class="rr__ph-block"></span><span class="rr__ph-line rr__ph-line--lg"></span><span class="rr__ph-line"></span><span class="rr__ph-line rr__ph-line--sm"></span><span class="rr__ph-btn"></span></div></figure>
+          <figure class="rr__phone"><div class="rr__screen"><span class="rr__ph-notch"></span><span class="rr__ph-block"></span><span class="rr__ph-line rr__ph-line--lg"></span><span class="rr__ph-line"></span><span class="rr__ph-line rr__ph-line--sm"></span><span class="rr__ph-btn"></span></div></figure>
+          <figure class="rr__phone"><div class="rr__screen"><span class="rr__ph-notch"></span><span class="rr__ph-block"></span><span class="rr__ph-line rr__ph-line--lg"></span><span class="rr__ph-line"></span><span class="rr__ph-line rr__ph-line--sm"></span><span class="rr__ph-btn"></span></div></figure>
+          <figure class="rr__phone"><div class="rr__screen"><span class="rr__ph-notch"></span><span class="rr__ph-block"></span><span class="rr__ph-line rr__ph-line--lg"></span><span class="rr__ph-line"></span><span class="rr__ph-line rr__ph-line--sm"></span><span class="rr__ph-btn"></span></div></figure>
+          <figure class="rr__phone"><div class="rr__screen"><span class="rr__ph-notch"></span><span class="rr__ph-block"></span><span class="rr__ph-line rr__ph-line--lg"></span><span class="rr__ph-line"></span><span class="rr__ph-line rr__ph-line--sm"></span><span class="rr__ph-btn"></span></div></figure>
+          <figure class="rr__phone"><div class="rr__screen"><span class="rr__ph-notch"></span><span class="rr__ph-block"></span><span class="rr__ph-line rr__ph-line--lg"></span><span class="rr__ph-line"></span><span class="rr__ph-line rr__ph-line--sm"></span><span class="rr__ph-btn"></span></div></figure>
+          <figure class="rr__phone"><div class="rr__screen"><span class="rr__ph-notch"></span><span class="rr__ph-block"></span><span class="rr__ph-line rr__ph-line--lg"></span><span class="rr__ph-line"></span><span class="rr__ph-line rr__ph-line--sm"></span><span class="rr__ph-btn"></span></div></figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DID YOU KNOW ============ -->
+  <section id="did-you-know" class="section did-you-know">
+    <div class="container dyk__grid">
+      <div class="dyk__art">
+        <img src="assets/sitevolt-hero-illustration-left.webp" alt="" width="801" height="1200" loading="lazy" decoding="async" />
+      </div>
+      <div class="dyk__copy">
+        <a href="#final-cta" class="pill dyk__pill" data-checkout>SEE WHAT $1 GETS YOU</a>
+        <h2 class="dyk__title">DID YOU KNOW</h2>
+        <p class="dyk__sub">The geniuses building your site spent a combined 10+ years driving <span class="ul-blue dyk__blue">$250M+</span> in online sales for big brands.</p>
+      </div>
+      <div class="dyk__sticker" aria-hidden="true">
+        <span>But don&rsquo;t<br>take it<br>from us!</span>
+      </div>
+    </div>
+  </section>
+
+  </div><!-- /.bp-band -->
+
+  <!-- ============ TESTIMONIALS ============ -->
+  <section id="testimonials" class="section testimonials dark-bg torn-bottom torn--cream">
+    <!-- structural page-chrome: no loading="lazy" — a late/lazy rip leaves the
+         band ending in a razor-straight edge until Chrome decodes it.
+         Same charcoal tear scan as the hero/case-b page rips. -->
+    <img class="tst__rip" src="assets/hero-page-rip-charcoal.png" alt="" aria-hidden="true" width="2758" height="300" decoding="async" />
+    <div class="container tst__wrap">
+      <button class="tst__arrow tst__arrow--prev" type="button" aria-label="Previous testimonials">«</button>
+      <div class="tst__cards">
+        <article class="tcard">
+          <div class="tcard__stars">★★★★★</div>
+          <p class="tcard__quote">“One of the best decisions we've made this year. The
+            SiteVolt team is fast, sharp, and results-driven.”</p>
+          <div class="tcard__brand">WALTERS CO.</div>
+        </article>
+        <article class="tcard">
+          <div class="tcard__stars">★★★★★</div>
+          <p class="tcard__quote">“Consistent, high-quality work. We finally have a system
+            that turns email into reliable revenue.”</p>
+          <div class="tcard__brand tcard__brand--vibe">VIBE</div>
+        </article>
+        <article class="tcard">
+          <div class="tcard__stars">★★★★★</div>
+          <p class="tcard__quote">“I usually nitpick every draft. With SiteVolt, the first
+            pass was right. Clean strategy, clean execution.”</p>
+          <div class="tcard__brand tcard__brand--dod">DOD</div>
+        </article>
+      </div>
+      <button class="tst__arrow tst__arrow--next" type="button" aria-label="Next testimonials">»</button>
+    </div>
+  </section>
+
+  <!-- blueprint side borders frame this cream band too (process intro → offer);
+       the testimonials' cream tear opens them at the top, the data-driven tear closes them -->
+  <div class="bp-band">
+  <!-- continues the border columns up over the testimonials panel's cream tear,
+       so the blueprints rip away with the page -->
+  <span class="bp-band__rip-borders" aria-hidden="true"></span>
+
+  <!-- ============ PROCESS ============ -->
+  <section id="process" class="section process">
+    <div class="proc__intro">
+      <div class="scrap scrap--draw scrap--proc-intro" aria-hidden="true"></div>
+      <div class="container proc__intro-inner">
+        <h2 class="proc__title">WE DO THE WORK.<br>YOU JUST APPROVE IT.</h2>
+        <p class="proc__sub">
+          <svg class="proc__arrow" viewBox="0 0 90 60" aria-hidden="true">
+            <path d="M84 6 C40 2 6 16 8 44" fill="none" stroke="var(--ink)" stroke-width="3.5" stroke-linecap="round"/>
+            <path d="M2 30 L9 47 L24 39" fill="none" stroke="var(--ink)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <em class="proc__adv">No sales calls. No B.S.</em> <span class="proc__sub-rest">Just pick your design, approve the build, and you're live in 14 days.</span>
+        </p>
+      </div>
+      <div class="proc__portrait">
+        <img src="assets/sitevolt-process-intro-portrait.webp" alt="" width="601" height="614" loading="lazy" decoding="async" />
+      </div>
+    </div>
+
+    <div class="proc__steps-wrap">
+      <div class="container proc__steps-inner">
+        <svg class="proc__squiggle" viewBox="0 0 60 40" aria-hidden="true"><path d="M4 30 C14 10 22 34 32 14 C40 2 48 24 56 8" fill="none" stroke="#2f6bff" stroke-width="3.5" stroke-linecap="round"/></svg>
+        <svg class="proc__bolt" viewBox="0 0 30 44" aria-hidden="true"><path d="M18 2 L6 22 L14 22 L8 42 L26 18 L16 18 L24 2 Z" fill="#2f6bff"/></svg>
+        <ol class="proc__steps">
+          <li class="pstep">
+            <div class="pstep__num">1</div>
+            <span class="pstep__label">PAY $1</span>
+            <p class="pstep__desc">Your $1 holds one of 5 spots this month and waives the build fee. Answer a few questions by email. No sales call. Nothing to learn.</p>
+          </li>
+          <li class="pstep">
+            <div class="pstep__num">2</div>
+            <span class="pstep__label">DESIGN</span>
+            <p class="pstep__desc">No templates. We design around <em>your</em> business. Your photos, your words, your services. A few custom options land in your inbox. You pick the one you love.</p>
+          </li>
+          <li class="pstep">
+            <div class="pstep__num">3</div>
+            <span class="pstep__label">BUILD</span>
+            <p class="pstep__desc">We build and polish every page. Every call and form routes to one inbox, so no lead slips through. You don't lift a finger.</p>
+          </li>
+          <li class="pstep">
+            <div class="pstep__num">4</div>
+            <span class="pstep__label">LAUNCH</span>
+            <p class="pstep__desc">Look it over and reply &ldquo;approved.&rdquo; You're live on your own domain in 14 days, before you've paid a cent past that dollar. After that, every change is one text away.</p>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ THE OFFER (value stack) ============ -->
+  <section id="offer" class="section offer">
+    <div class="container">
+      <h2 class="offer__title">YOU'VE SPENT $1<br>ON <span class="rr__ul">DUMBER THINGS</span></h2>
+      <p class="offer__sub">Today, your dollar buys the big-brand build agencies charge five figures for. Here's&nbsp;the&nbsp;receipt:</p>
+      <div class="offer__receipt">
+       <div class="offer__card">
+        <div class="rcpt__head">
+          <p class="rcpt__tag"><span class="rcpt__tag-part">Big-brand website</span><span class="rcpt__sep"> &middot; </span><span class="rcpt__tag-part">built by hand</span></p>
+          <hr class="rcpt__rule">
+          <p class="rcpt__caption">*&nbsp;what you get, and what it's worth&nbsp;*</p>
+        </div>
+
+        <p class="offer__sched-label">To get you launched <span>(one-time)</span></p>
+        <ul class="offer__menu">
+          <li><span class="offer__row"><span class="offer__item">The Five-Figure Build</span><span class="offer__dots"></span><span class="offer__price">$8,500</span></span><span class="offer__desc">Hand-coded to look like $10K. Never a template.</span></li>
+          <li><span class="offer__row"><span class="offer__item">The Closer Copy System</span><span class="offer__dots"></span><span class="offer__price">$1,500</span></span><span class="offer__desc">Written by a real copywriter. Words that book jobs.</span></li>
+          <li><span class="offer__row"><span class="offer__item">The Showroom Photo Set</span><span class="offer__dots"></span><span class="offer__price">$800</span></span><span class="offer__desc">Fresh shots of your best work. No stock, no phone pics.</span></li>
+          <li><span class="offer__row"><span class="offer__item">The Plays-Nice Hookup</span><span class="offer__dots"></span><span class="offer__price">$1,200</span></span><span class="offer__desc">Plugs into your booking tool or CRM. Nothing new to learn.</span></li>
+        </ul>
+        <p class="offer__total">&approx; <b><s>$8,500</s> $1</b></p>
+
+        <p class="offer__sched-label">Every month after</p>
+        <ul class="offer__menu">
+          <li><span class="offer__row"><span class="offer__item">The Set-&amp;-Forget Vault</span><span class="offer__dots"></span><span class="offer__price">$29/mo</span></span><span class="offer__desc">Hosting, security, backups. Breaks at 2am? Our problem.</span></li>
+          <li><span class="offer__row"><span class="offer__item">The Numbers Report</span><span class="offer__dots"></span><span class="offer__price">$19/mo</span></span><span class="offer__desc">Traffic and leads, in your inbox monthly. No guessing.</span></li>
+          <li><span class="offer__row"><span class="offer__item">The Text-It-Done Line</span><span class="offer__dots"></span><span class="offer__price">$99/mo</span></span><span class="offer__desc">Unlimited changes. Text us, live by tomorrow. No tickets.</span></li>
+        </ul>
+        <p class="offer__total">&approx; <b>$147/mo</b></p>
+
+        <div class="offer__reveal">
+          <p class="offer__normal">Sticker price: &approx; $10,300 your&nbsp;first&nbsp;year.</p>
+          <p class="offer__strike">You don't pay that.</p>
+          <p class="offer__big">YOUR PRICE $1</p>
+          <div class="offer__copy">
+            <p class="offer__copy-body">One dollar starts your build. Test the real thing in 14 days, then it's $147/mo, billed quarterly. <b>Don't love it after launch?</b> Full refund, old site restored, plus&nbsp;$99.</p>
+            <p class="offer__copy-body offer__copy-payoff"><i>Worst case, <b>you walk away $99&nbsp;richer</b>.</i></p>
+          </div>
+          <a href="#final-cta" class="pill offer__pill" data-checkout>BUILD MY BIG-BRAND SITE</a>
+          <p class="offer__fine">Cancel&nbsp;anytime</p>
+          <div class="rcpt__foot">
+            <hr class="rcpt__rule">
+            <p class="rcpt__thanks">***&nbsp;100% money-back guarantee&nbsp;***</p>
+            <div class="rcpt__barcode" aria-hidden="true"></div>
+            <p class="rcpt__code">SV-0625-001-$1</p>
+          </div>
+        </div>
+       </div>
+      </div>
+    </div>
+  </section>
+
+  </div><!-- /.bp-band (process → guarantees) -->
+
+  <!-- ============ DATA DRIVEN ============ -->
+  <section id="data-driven" class="section data-driven dark-bg torn-top torn-bottom torn--cream">
+    <span class="dd__rip-borders" aria-hidden="true"></span>
+    <!-- re-paints the dark band over the sunken receipt below the tear
+         contour (inverse-alpha twin of the torn-top strip) so the page rip
+         tears the receipt off mid-barcode -->
+    <span class="dd__tear-cut" aria-hidden="true"></span>
+    <div class="scrap scrap--draw scrap--dd-l" aria-hidden="true"></div>
+    <div class="scrap scrap--draw scrap--dd-r" aria-hidden="true"></div>
+    <h2 class="dd__title"><span class="dd__line"><svg class="dd__spark dd__spark--tl" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 2 L23 15 M38 14 L26 20 M30 36 L23 25 M6 32 L15 23 M2 10 L14 17" fill="none" stroke="#9dc0f5" stroke-width="3.5" stroke-linecap="round"/></svg><svg class="dd__spark dd__spark--tr" viewBox="0 0 30 44" aria-hidden="true"><path d="M18 2 L6 22 L14 22 L8 42 L26 18 L16 18 L24 2 Z" fill="#9dc0f5"/></svg>IMAGINE</span><br><span class="dd__ul"><svg class="dd__spark dd__spark--bl" viewBox="0 0 30 44" aria-hidden="true"><path d="M18 2 L6 22 L14 22 L8 42 L26 18 L16 18 L24 2 Z" fill="#9dc0f5"/></svg><svg class="dd__spark dd__spark--br" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 2 L23 15 M38 14 L26 20 M30 36 L23 25 M6 32 L15 23 M2 10 L14 17" fill="none" stroke="#9dc0f5" stroke-width="3.5" stroke-linecap="round"/></svg>YOUR SITE</span></h2>
+  </section>
+
+  <!-- ============ CASE A ============ -->
+  <!-- blueprint side borders frame this cream band too (case-a, opened by the
+       data-driven cream tear, closed by case-b's charcoal page rip) -->
+  <div class="bp-band">
+  <span class="bp-band__rip-borders" aria-hidden="true"></span>
+  <section id="case-a" class="section case-study case-a">
+    <div class="container cs__grid">
+      <div class="cs__media">
+        <div class="cs__ba-labels"><span>BEFORE</span><span>AFTER</span></div>
+        <img src="assets/sitevolt-case-b-pair.webp" alt="Side-by-side before and after of a berry farm website redesign" width="789" height="1333" loading="lazy" decoding="async" />
+      </div>
+      <div class="cs__body">
+        <h2 class="cs__head"><mark class="hl">DATED</mark> TO <mark class="hl">DIALED</mark> IN <span class="blue cs__pct-ul">14 DAYS</span></h2>
+        <p class="cs__desc">Every day your site looks like 2015, customers quietly pick
+          whoever looks newer. In 14 days we rebuild yours around one job: turning the
+          people who find you into people who call.</p>
+        <div class="cs__stats">
+          <!-- Stanford Web Credibility Research: 75% judge a company's credibility on its site design -->
+          <div class="cstat"><div class="cstat__num">75%</div><div class="cstat__cap">JUDGE YOU BY YOUR SITE</div></div>
+          <!-- Google / Think with Google: 53% of mobile visits abandoned if a page takes >3s to load -->
+          <div class="cstat"><div class="cstat__num">53%</div><div class="cstat__cap">LEAVE IF IT LOADS SLOW</div></div>
+          <!-- Adobe State of Content: 38% stop engaging with a site if the layout/design is unattractive -->
+          <div class="cstat"><div class="cstat__num">38%</div><div class="cstat__cap">BAIL ON UGLY DESIGN</div></div>
+          <!-- Widely-cited UX research: 94% of first impressions are design-related -->
+          <div class="cstat"><div class="cstat__num">94%</div><div class="cstat__cap">FIRST LOOKS ARE DESIGN</div></div>
+        </div>
+        <h3 class="cs__impl-head">WHAT'S INCLUDED</h3>
+        <ul class="cs__impl">
+          <li><span class="chk" aria-hidden="true"></span>A site that finally looks the part</li>
+          <li><span class="chk" aria-hidden="true"></span>Looks right on every phone</li>
+          <li><span class="chk" aria-hidden="true"></span>One tap to call or book</li>
+          <li><span class="chk" aria-hidden="true"></span>Every lead in one inbox</li>
+          <li><span class="chk" aria-hidden="true"></span>Easier to find on Google</li>
+          <li><span class="chk" aria-hidden="true"></span>Hosting + security handled</li>
+          <li><span class="chk" aria-hidden="true"></span>Changes? We make them for you</li>
+          <li><span class="chk" aria-hidden="true"></span>Cancel anytime, no contract</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  </div><!-- /.bp-band (case-a) -->
+
+  <!-- ============ CASE B ============ -->
+  <section id="case-b" class="section case-study case-study--dark case-b dark-bg torn-bottom torn--cream">
+    <img class="cs__rip" src="assets/hero-page-rip-charcoal.png" alt="" aria-hidden="true" width="2758" height="300" decoding="async" />
+    <img class="cs__ok-hand" src="assets/sitevolt-pointing-hand.png" alt="" aria-hidden="true" width="378" height="459" loading="lazy" decoding="async" />
+    <div class="container cs__grid cs__grid--rev">
+      <h2 class="cs__head cs__head--span">GROWERS, BAKERS, <br>BARBERS, AND YOU?</h2>
+      <div class="cs__body">
+        <p class="cs__desc">We started with farmers market vendors. Word got around. Now it's
+          barbers, taco trucks, contractors. Same story every time: unforgettable in person,
+          invisible online. Sell to your town? You're on this&nbsp;list.</p>
+        <div class="cs__stats cs__stats--row">
+          <!-- BrightLocal Local Consumer Review Survey: ~98% of people read online content to find/evaluate local businesses -->
+          <div class="cstat"><div class="cstat__num">98%</div><div class="cstat__cap">LOOK YOU UP ONLINE</div></div>
+          <!-- Think with Google: 76% who search for something nearby on a phone visit a business within a day -->
+          <div class="cstat"><div class="cstat__num">76%</div><div class="cstat__cap">VISIT WITHIN A DAY</div></div>
+          <!-- Think with Google: 28% of searches for something nearby result in a purchase -->
+          <div class="cstat"><div class="cstat__num">28%</div><div class="cstat__cap">"NEAR ME" ENDS IN SALES</div></div>
+          <!-- Verisign small-business survey: 84% think a business with a real website is more credible than one with only social media -->
+          <div class="cstat"><div class="cstat__num">84%</div><div class="cstat__cap">PICK SITES OVER SOCIAL</div></div>
+        </div>
+        <h3 class="cs__impl-head">WHO WE SERVE</h3>
+        <ul class="cs__impl">
+          <li><span class="chk" aria-hidden="true"></span>Farmers markets &amp; food vendors</li>
+          <li><span class="chk" aria-hidden="true"></span>Growers, bakers &amp; makers</li>
+          <li><span class="chk" aria-hidden="true"></span>Cafés, restaurants &amp; food trucks</li>
+          <li><span class="chk" aria-hidden="true"></span>Shops, boutiques &amp; artisans</li>
+          <li><span class="chk" aria-hidden="true"></span>Salons, spas &amp; barbershops</li>
+          <li><span class="chk" aria-hidden="true"></span>Contractors &amp; home services</li>
+          <li><span class="chk" aria-hidden="true"></span>Gyms, studios &amp; wellness</li>
+          <li><span class="chk" aria-hidden="true"></span>Pros, services &amp; everyone in between</li>
+        </ul>
+      </div>
+      <div class="cs__media">
+        <div class="cs__ba-labels"><span>BEFORE</span><span>AFTER</span></div>
+        <img src="assets/sitevolt-case-a-pair.webp" alt="Side-by-side before and after of a mobile-first website rebuild" width="751" height="849" loading="lazy" decoding="async" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CASE C ============ -->
+  <!-- blueprint side borders frame this cream band too (case-c,
+       opened by case-b's cream tear, closed by the funnel's top rip) -->
+  <div class="bp-band">
+  <span class="bp-band__rip-borders" aria-hidden="true"></span>
+  <section id="case-c" class="section case-study case-c">
+    <div class="container cs__grid">
+      <div class="cs__media cs__media--split">
+        <div class="cs__panel">
+          <div class="cs__ba-label">BEFORE</div>
+          <img class="cs__shot cs__shot--before" src="assets/sitevolt-case-c-before.webp" alt="Website before redesign: dated, cluttered layout" width="452" height="927" loading="lazy" decoding="async" />
+        </div>
+        <div class="cs__panel">
+          <div class="cs__ba-label cs__ba-label--after">AFTER<svg class="cs__label-bolt" viewBox="0 0 30 44" aria-hidden="true"><path d="M18 2 L6 22 L14 22 L8 42 L26 18 L16 18 L24 2 Z" fill="#2f6bff"/></svg></div>
+          <img class="cs__shot cs__shot--after" src="assets/sitevolt-case-c-after.webp" alt="Website after redesign: clean, modern layout" width="453" height="927" loading="lazy" decoding="async" />
+        </div>
+      </div>
+      <div class="cs__body">
+        <h2 class="cs__head"><svg class="cs__head-spark" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 2 L23 15 M38 14 L26 20 M30 36 L23 25 M6 32 L15 23 M2 10 L14 17" fill="none" stroke="#2f6bff" stroke-width="4" stroke-linecap="round"/></svg>LOOK <span class="blue cs__pct-ul">10X</span> YOUR SIZE</h2>
+        <p class="cs__desc">The chain down the street paid six figures for their website. We
+          built those sites. Now your shop walks in looking just as big, for a&nbsp;dollar.</p>
+        <div class="cs__stats">
+          <!-- Forrester Research: every $1 invested in UX/design returns up to $100 (ROI of 9,900%) -->
+          <div class="cstat"><div class="cstat__num">$100</div><div class="cstat__cap">BACK PER $1 ON DESIGN</div></div>
+          <!-- Widely-cited usability research: 88% of online consumers won't return after a bad experience -->
+          <div class="cstat"><div class="cstat__num">88%</div><div class="cstat__cap">WON'T RETRY A BAD SITE</div></div>
+          <!-- Portent: a site loading in 1s converts up to 3x higher than one loading in 5s -->
+          <div class="cstat"><div class="cstat__num">3X</div><div class="cstat__cap">MORE SALES IF IT'S FAST</div></div>
+          <!-- GE Capital Retail Bank study: 81% of shoppers research online before they buy -->
+          <div class="cstat"><div class="cstat__num">81%</div><div class="cstat__cap">RESEARCH, THEN BUY</div></div>
+        </div>
+        <h3 class="cs__impl-head">WHAT'S INCLUDED</h3>
+        <ul class="cs__impl">
+          <li><span class="chk" aria-hidden="true"></span>Looks like you spent six figures</li>
+          <li><span class="chk" aria-hidden="true"></span>Built to national-chain standards</li>
+          <li><span class="chk" aria-hidden="true"></span>Custom design, no template look</li>
+          <li><span class="chk" aria-hidden="true"></span>Copy written to sound like you</li>
+          <li><span class="chk" aria-hidden="true"></span>Polished down to the last detail</li>
+          <li><span class="chk" aria-hidden="true"></span>Loads fast so visitors stay</li>
+          <li><span class="chk" aria-hidden="true"></span>Built to turn visitors into calls</li>
+          <li><span class="chk" aria-hidden="true"></span>Fully managed, nothing on you</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  </div><!-- /.bp-band (case-c) -->
+
+  <!-- ============ FUNNEL ============ -->
+  <!-- black band: its cream top rip closes the case-c band above, then the
+       whole section runs dark into the callouts and final CTA -->
+  <section id="funnel" class="section funnel dark-bg torn-top torn--cream">
+    <span class="fn__rip-borders" aria-hidden="true"></span>
+    <div class="container">
+      <h2 class="fn__title">TURN STRANGERS <br>INTO CUSTOMERS</h2>
+      <p class="fn__sub">Every new customer walks through your <span class="fn__sub-u">website</span> first. Here&rsquo;s the path they take to becoming a sale</p>
+      <div class="fn__diagram">
+        <img class="fn__funnel" src="assets/sitevolt-funnel-only.webp" alt="" width="1340" height="1284" loading="lazy" decoding="async" />
+        <ul class="fn__stages">
+          <li><span class="fn__stage">FIRST LOOK:</span><span class="fn__stage-d"><span class="fn__check" aria-hidden="true">✓</span>Your site passes the 3-second test</span></li>
+          <li><span class="fn__stage">TRUST:</span><span class="fn__stage-d"><span class="fn__check" aria-hidden="true">✓</span>You look like the safe choice</span></li>
+          <li><span class="fn__stage">ACTION:</span><span class="fn__stage-d"><span class="fn__check" aria-hidden="true">✓</span>They call you, not a competitor</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FAQ ============ -->
+  <!-- continues the funnel's dark band; the blue claim becomes the FAQ headline,
+       carrying the reader from "stranger into customer" into objection-handling
+       that slides them down into the final CTA -->
+  <section id="faq" class="section faq dark-bg">
+    <div class="container">
+      <h2 class="faq__claim">
+        <span class="faq__claim-eyebrow">All that, for a dollar</span>
+        <span class="faq__claim-lead">Yeah, we know how it sounds.</span>
+        <span class="faq__claim-sub">Here are the straight answers. No fine print.</span>
+      </h2>
+      <div class="faq__list">
+        <details class="faq__item">
+          <summary class="faq__q">What's the catch?<span class="faq__sign" aria-hidden="true"></span></summary>
+          <div class="faq__a">No catch. That dollar holds one of this month's five spots and waives the <strong>$8,500 build fee</strong>. You don't pay another cent until your site is live and you love it. We only get paid when you stay, so the work has to be good. That's the whole bet.</div>
+        </details>
+        <details class="faq__item">
+          <summary class="faq__q">What do I actually pay?<span class="faq__sign" aria-hidden="true"></span></summary>
+          <div class="faq__a">Nothing for the first <strong>14 days</strong>. Live with the site, use it, kick the tires. After that it's <strong>$147/mo</strong>, less than most people spend on coffee. Your first charge covers your next two months, then it's billed quarterly, always paid in advance. That includes hosting, security, your domain, daily backups, unlimited changes, and a monthly report on how your site's performing. No contract. Cancel anytime.</div>
+        </details>
+        <details class="faq__item">
+          <summary class="faq__q">What does $1 get me?<span class="faq__sign" aria-hidden="true"></span></summary>
+          <div class="faq__a">The whole thing. A custom multi-page site (design, copywriting, your photos, mobile, and hosting) built around your services, not a one-page brochure. <strong>We write it and build it. You just approve it.</strong></div>
+        </details>
+        <details class="faq__item">
+          <summary class="faq__q">Is there a sales call?<span class="faq__sign" aria-hidden="true"></span></summary>
+          <div class="faq__a">Nope. We&rsquo;re happy to talk if you want to, but we mostly work over email or text. You answer a few questions, pick the design you like best, and reply <strong>&ldquo;approved.&rdquo;</strong> We handle the writing, building, and launching from there.</div>
+        </details>
+        <details class="faq__item">
+          <summary class="faq__q">A whole site in 14 days?<span class="faq__sign" aria-hidden="true"></span></summary>
+          <div class="faq__a">Yes, and it's exactly why we only take <strong>five builds a month</strong>. The cap is what protects the 14-day promise. Take on more and it breaks, so we don't.</div>
+        </details>
+        <details class="faq__item">
+          <summary class="faq__q">Custom, or a template?<span class="faq__sign" aria-hidden="true"></span></summary>
+          <div class="faq__a">Custom, every time. Your photos, your words, your services. <strong>Never a template</strong>. We've built six-figure sites for national brands, and yours is made the exact same way.</div>
+        </details>
+        <details class="faq__item">
+          <summary class="faq__q">Will it break my setup?<span class="faq__sign" aria-hidden="true"></span></summary>
+          <div class="faq__a">No. We tie into the system you&rsquo;re already running: your booking tool, your inbox, your CRM, whatever it is. <strong>However your business works today, it keeps working that exact same way.</strong> The only thing that changes is more calls, more leads, and more booked jobs coming through it.</div>
+        </details>
+        <details class="faq__item">
+          <summary class="faq__q">What if I cancel?<span class="faq__sign" aria-hidden="true"></span></summary>
+          <div class="faq__a">No hostage games. <strong>No contract. Cancel anytime.</strong> If you leave, we put your old website back exactly the way it was, like you never left. Your <strong>domain and content are yours</strong> from day one. We're betting you'll stay because the work is good, not because you're locked in.</div>
+        </details>
+        <details class="faq__item">
+          <summary class="faq__q">What if I don't like it?<span class="faq__sign" aria-hidden="true"></span></summary>
+          <div class="faq__a">Then you pay nothing and we hand you $99. For <strong>14 days after launch</strong> it's a full refund, your old site restored, and a hundred bucks for your time. <strong>Worst case, you walk away $99 richer</strong>, like it never happened.</div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FINAL CTA ============ -->
+  <section id="final-cta" class="section final-cta dark-bg">
+    <div class="fcta__ribbon torn-top torn-bottom torn--cream-dark">
+      <img class="fcta__hand fcta__hand--l" src="assets/sitevolt-footer-cta-illustration-left.webp" alt="" width="629" height="531" loading="lazy" decoding="async" />
+      <img class="fcta__hand fcta__hand--r" src="assets/sitevolt-footer-cta-illustration-right.webp" alt="" width="629" height="614" loading="lazy" decoding="async" />
+      <div class="container fcta__inner">
+        <div class="fcta__center">
+          <h2 class="fcta__title">READY TO PULL THE PLUG?</h2>
+          <p class="fcta__sub">That dated site is handing your next customer to the competitor who
+            looks the part. Switch yours on for a dollar. Don't love it? We restore your old site and pay you $99.
+            <strong data-spot-final>Spots are limited each month. When they're gone, they're gone.</strong></p>
+          <a href="#footer" class="pill pill--ghost" data-spot-cta data-checkout>See What $1 Gets You</a>
+          <p class="fcta__recap"><span class="nowrap">$1 today</span>&ensp;<span class="nowrap">·&ensp;Live in 14 days</span>&ensp;<span class="nowrap">·&ensp;Don't love it? Keep $99</span>&ensp;<span class="nowrap">·&ensp;Cancel anytime</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer id="footer" class="section footer dark-bg">
+    <div class="container footer__inner">
+      <a class="wordmark" href="#hero">
+        <span class="wordmark__name">SITEVOLT</span>
+        <span class="wordmark__sub">MARKETING</span>
+      </a>
+      <div class="footer__capture">
+        <span class="footer__cap-label">ONE SHORT EMAIL A MONTH: WHAT'S WORKING IN LOCAL MARKETING RIGHT NOW</span>
+        <form class="footer__form">
+          <div class="footer__control">
+            <input class="footer__input" type="email" name="email" autocomplete="email" required placeholder="Your email" aria-label="Your email" />
+            <button class="pill pill--sm footer__submit" type="submit">SEND IT</button>
+          </div>
+          <p class="footer__status visually-hidden" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+      <nav class="footer__links">
+        <a href="terms.html">Terms Of Use</a>
+        <a href="privacy.html">Privacy Policy</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,3341 @@
+/* =================================================================
+   SiteVolt — vintage patent / blueprint collage marketing site
+   Organized: 1) tokens  2) reset  3) textures  4) components
+              5) topbar   6+) sections (added per build iteration)
+   ================================================================= */
+
+/* ---------- 1. DESIGN TOKENS ---------- */
+:root {
+  --volt-blue:       #4884ea;  /* light band blue (process/final-cta, sampled) */
+  --volt-blue-deep:  #1d63e3;  /* deep blue: data-driven band, chips, key pills (sampled) */
+  --volt-blue-bright:#2f6bff;  /* scribbles / accents */
+  --paper:           #f4ecdf;  /* aged cream paper (sampled) */
+  --paper-2:         #f1e7db;  /* topbar cream (sampled) */
+  --paper-edge:      #d8cdb6;  /* torn-edge shadow */
+  --ink:             #141414;  /* near-black text */
+  --dark:            #232220;  /* warm charcoal band bg (sampled) */
+  --dark-2:          #0c0b0a;  /* darkest */
+  --card:            #ffffff;
+  --line-blue:       rgba(72, 132, 234, 0.09); /* faint blueprint lines */
+
+  /* CTA buttons — see DESIGN.md §2 "CTA color". Candidate B (deep ember):
+     white text passes WCAG AA at all pill sizes; candidate A #e8641b was ~3.3:1.
+     Was: var(--volt-blue) bg + var(--ink) text. */
+  --cta-bg:          #c8500e;
+  --cta-ink:         #ffffff;
+
+  /* Blueprint side borders: sized by a shared height so the artwork is the
+     SAME scale on both sides; --border-w is the column width / content gutter. */
+  --tile-h: 658px;        /* shared blueprint scale (both sides) — sized so the
+                             399x1737 seamless strips render ~151px wide,
+                             covering the full column with no bg sliver */
+  --border-w: 150px;      /* column width — both tiles fill it flush */
+  --maxw: 1400px;
+  --pad: 64px;            /* content inset (~5% at 1280, matches mockup) */
+  --pad-hero: calc(var(--border-w) + 26px);  /* hero content clears the border columns */
+
+  --f-display: "Anton", "Oswald", sans-serif;
+  --f-head:    "Archivo Black", "Oswald", sans-serif;
+  --f-cond:    "Oswald", sans-serif;
+  --f-body:    "Inter", system-ui, sans-serif;
+  --f-mono:    "Courier Prime", monospace;
+  --f-scribble:"Kalam", cursive;
+
+  /* Type scale — hero-derived (see DESIGN.md §3). At the 1280 build width:
+     h1 55 / h2 50 / h3 40 / h4 20 / lead-hero 22 / lead 19 / body 16 / small 14.
+     Head:lead holds the hero's ~2.5:1 ratio (h1 55 : lead-hero 22 = h2 50 :
+     lead 20). Poster bands (--f-display: DYK, BEFORE & AFTER, final-CTA
+     ribbon title, step numerals), the receipt card, and component chrome
+     (pills, eyebrows, bars, footer) are sanctioned exceptions that size by
+     composition instead. Text elements pick from these tokens — don't mint
+     new clamp() sizes. */
+  --fs-h1:        clamp(34px, 4.3vw, 83px);
+  --fs-h2:        clamp(30px, 3.9vw, 50px);
+  --fs-h3:        clamp(26px, 3.1vw, 40px);
+  --fs-h4:        clamp(18px, 1.56vw, 22px);
+  --fs-lead-hero: clamp(15px, 1.9vw + 6px, 22px);
+  --fs-lead:      clamp(16px, 1.5vw, 20px);
+  --fs-body:      clamp(15px, 1.25vw, 16px);
+  --fs-small:     14px;
+}
+
+/* ---------- 2. RESET ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+html { overflow-x: clip; }
+body {
+  margin: 0;
+  font-family: var(--f-body);
+  color: var(--ink);
+  overflow-x: hidden;
+  overflow-x: clip; /* like hidden, but can't be scrolled programmatically/by drag */
+  line-height: 1.5;
+  position: relative;
+  /* flat static cream canvas (dark/blue bands paint over it) */
+  background-color: var(--paper);
+}
+/* keyboard focus: high-contrast ring that survives both cream and dark bands */
+a:focus-visible, button:focus-visible, input:focus-visible {
+  outline: 3px solid var(--volt-blue-bright);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.nowrap { white-space: nowrap; }
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Taped torn-blueprint pieces framing cream stretches (left/right columns):
+   the HERO (a self-contained "blueprint page" closed off by the page-rip at
+   its bottom) and the .bp-band wrappers (dialed-in → did-you-know, closed by
+   the testimonials tear; process steps → offer, closed by the data-driven
+   tear), where the columns tile continuously until the closing tear. */
+.bp-band { position: relative; }
+.hero::before,
+.hero::after,
+.bp-band::before,
+.bp-band::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-repeat: repeat-y;
+  /* columns run all the way down; the closing tear (hero page-rip / torn-top
+     of the next band, both higher z) covers them, so they read as ripped off
+     along the tear contour */
+}
+.hero::before,
+.bp-band::before {
+  left: 0;
+  width: var(--border-w);
+  background-image: url("assets/blueprint-border-left.webp");
+  background-position: left top;
+  background-size: auto var(--tile-h);
+}
+.hero::after,
+.bp-band::after {
+  right: 0;
+  width: var(--border-w);
+  background-image: url("assets/blueprint-border-right.webp");
+  background-position: right top;
+  background-size: auto var(--tile-h);
+}
+/* band columns count their tile phase from the closing tear (bottom), so the
+   tile always runs flush into it — .dd__rip-borders continues the tile from
+   the same boundary over the tear strip itself */
+.bp-band::before { background-position: left bottom; }
+.bp-band::after  { background-position: right bottom; }
+/* blueprint border columns continue UP over the cream tear strip that opens
+   the band (trusted panel's torn-bottom), ripped along its contour — same
+   idea as .dd__rip-borders but the tear opens upward, so the mask is the
+   flipped tear scan. The element spans the full band height with bottom-
+   anchored tiles so the phase matches the band columns seamlessly; the mask
+   keeps only the strip area at the top visible. */
+.bp-band__rip-borders {
+  --torn-h: clamp(44px, 6.21vw, 98px);  /* matches .torn--cream */
+  position: absolute;
+  top: calc(1px - var(--torn-h));       /* aligns with .torn-bottom::after box */
+  left: 0; right: 0;
+  bottom: 0;
+  z-index: 4;                           /* above the torn strip (z 3) */
+  pointer-events: none;
+}
+/* each side paints in its own pseudo clipped to --border-w, so the carry-up
+   is exactly as wide as the band columns it continues (the raw tile is wider
+   than the column at narrow viewports — unclipped it juts past the sliver as
+   a fat blue chunk in the tear strip). The mask spans the viewport (100vw)
+   with each side anchored to its own edge, so every pseudo sees its local
+   slice of the same full-width tear contour the strip paints. */
+.bp-band__rip-borders::before,
+.bp-band__rip-borders::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0;
+  width: var(--border-w);
+  background-repeat: repeat-y;
+  background-size: auto var(--tile-h);
+  -webkit-mask-image: url("assets/torn-cream-paper-flipped.png");
+  mask-image: url("assets/torn-cream-paper-flipped.png");
+  -webkit-mask-size: 100vw var(--torn-h);
+  mask-size: 100vw var(--torn-h);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+.bp-band__rip-borders::before {
+  left: 0;
+  background-image: url("assets/blueprint-border-left.webp");
+  background-position: left bottom;
+  -webkit-mask-position: left top;
+  mask-position: left top;
+}
+.bp-band__rip-borders::after {
+  right: 0;
+  background-image: url("assets/blueprint-border-right.webp");
+  background-position: right bottom;
+  -webkit-mask-position: right top;
+  mask-position: right top;
+}
+/* keep hero copy/art above the framing borders */
+.hero__grid { position: relative; z-index: 1; }
+/* content clears the blueprint border columns (rest of page uses --pad) */
+.hero > .container,
+.bp-band .container { padding: 0 var(--pad-hero); }
+/* the border columns hug the viewport edges, so the hero copy tracks them
+   too — uncapping the container keeps the copy beside the left column on
+   wide screens instead of stranding it at the centered 1400px box edge */
+.hero > .container { max-width: none; }
+img { max-width: 100%; display: block; }
+a { color: inherit; text-decoration: none; }
+h1, h2, h3, h4, p { margin: 0; }
+
+/* ---------- 3. TEXTURES ---------- */
+/* Aged cream paper + faint blueprint grid + schematic motifs.
+   Layered as a fixed-ish backdrop on cream sections via .paper-bg. */
+.paper-bg {
+  position: relative;
+  background-color: var(--paper);
+  background-image:
+    /* fine blueprint grid */
+    linear-gradient(var(--line-blue) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line-blue) 1px, transparent 1px),
+    /* coarse grid */
+    linear-gradient(rgba(31,95,230,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(31,95,230,0.06) 1px, transparent 1px),
+    /* warm paper mottling */
+    radial-gradient(circle at 20% 10%, rgba(216,205,182,0.5), transparent 45%),
+    radial-gradient(circle at 85% 70%, rgba(216,205,182,0.45), transparent 50%);
+  background-size:
+    26px 26px, 26px 26px,
+    130px 130px, 130px 130px,
+    100% 100%, 100% 100%;
+}
+/* faint schematic line-art overlay (technical drawing feel) */
+.paper-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: url("assets/blueprint-motif.svg");
+  background-repeat: repeat;
+  background-size: 620px auto;
+  mix-blend-mode: multiply;
+}
+.paper-bg > * { position: relative; z-index: 1; }
+
+/* dark band texture */
+.dark-bg {
+  position: relative;
+  background-color: var(--dark);
+  background-image:
+    linear-gradient(rgba(255,255,255,0.01) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.01) 1px, transparent 1px);
+  background-size: 28px 28px, 28px 28px;
+  color: var(--paper);
+}
+
+/* blue band texture */
+.blue-bg {
+  position: relative;
+  background-color: var(--volt-blue);
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 30px 30px, 30px 30px;
+  color: #fff;
+}
+
+/* ---------- 4. COMPONENTS ---------- */
+.container {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 var(--pad);
+}
+/* keep section content above collage scraps */
+.section > .container { position: relative; z-index: 1; }
+
+/* ---------- COLLAGE SCRAPS ---------- */
+.scrap { position: absolute; pointer-events: none; z-index: 0; }
+/* faint white technical line-art (patent drawing feel) */
+.scrap--draw {
+  background-image: url("assets/blueprint-motif.svg");
+  background-size: 420px auto;
+  filter: brightness(0) invert(1);
+  opacity: 0.16;
+}
+/* per-placement variants (were inline styles) */
+.scrap--proc-intro { right: 30px; top: 170px; width: 200px; height: 160px; filter: none; opacity: 0.5; }
+.scrap--dd-l { left: -20px; top: 30px; width: 240px; height: 85%; }
+.scrap--dd-r { right: -20px; bottom: 20px; width: 240px; height: 80%; }
+@media (max-width: 880px) { .scrap { display: none; } }
+
+/* Pill button */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--cta-bg);
+  color: var(--cta-ink);
+  font-family: var(--f-head);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-size: 15px;
+  text-align: center;
+  text-wrap: balance; /* multi-line labels split evenly, no "$1" orphan line */
+  padding: 13px 26px;
+  border-radius: 999px;
+  border: 2.5px solid var(--ink);
+  cursor: pointer;
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+.pill:hover { transform: translateY(-2px); filter: brightness(1.05); }
+.pill:active { transform: translateY(1px); }
+.pill--sm { font-size: 12px; padding: 8px 16px; }
+.pill--lg { font-size: 18px; padding: 16px 34px; }
+/* outline pill on the blue ribbon: ribbon blue bg, ink text + ink outline (mockup) */
+.pill--ghost { background: transparent; color: var(--ink); border-color: var(--ink); }
+
+/* Eyebrow label */
+.eyebrow {
+  font-family: var(--f-cond);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 14px;
+}
+
+/* Section base */
+.section { position: relative; }
+
+/* Torn-paper edge dividers. Strip color = the section that "tears" over.
+   --torn picks the SVG; place .torn-top / .torn-bottom on the lower/upper band. */
+.torn-top, .torn-bottom { position: relative; }
+.torn-top::before, .torn-bottom::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0;
+  height: var(--torn-h, 42px);
+  background-image: var(--torn);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  z-index: 3;
+  pointer-events: none;
+}
+.torn-top::before { top: -1px; }
+.torn-bottom::after { bottom: -1px; transform: scaleY(-1); }
+/* scanned paper-rip texture (2752x171); height tracks its natural aspect */
+.torn--cream   { --torn: url("assets/torn-cream-paper.png"); --torn-h: clamp(44px, 6.21vw, 98px); }
+.torn--dark    { --torn: url("assets/torn-dark.svg"); }
+.torn--darkest { --torn: url("assets/torn-darkest.svg"); }
+.torn--blue    { --torn: url("assets/torn-blue-paper.png"); --torn-h: clamp(44px, 6.21vw, 98px); }
+/* cream band floating on a dark section: the strip layers the cream rip scan
+   over a dark fill, so the strip's outer edge merges with the black section
+   and the deckle edge belongs to the cream — cream paper torn over black */
+.torn--cream-dark {
+  --torn: url("assets/torn-cream-paper-flipped.png"), linear-gradient(var(--dark), var(--dark));
+  --torn-h: clamp(44px, 6.21vw, 98px);
+}
+/* stop the dark fill short of the seam edge: the scan's anti-aliased edge row
+   would otherwise let it bleed through as a hairline across the ribbon */
+.torn--cream-dark.torn-top::before,
+.torn--cream-dark.torn-bottom::after {
+  background-size: 100% 100%, 100% calc(100% - 3px);
+  background-position: top, top;
+}
+
+/* ---------- URGENCY BAR (live month-end countdown) ---------- */
+.urgency {
+  display: block;
+  background: var(--dark);
+  color: var(--paper);
+  border-bottom: 2.5px solid var(--ink);
+  text-decoration: none;
+  position: relative;
+  z-index: 21;
+  transition: filter 0.12s ease;
+}
+.urgency:hover { filter: brightness(1.12); }
+.urgency__inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 7px 14px;
+  padding: 9px 16px;
+  text-align: center;
+}
+.urgency__label {
+  font-family: var(--f-cond);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 13px;
+}
+.urgency__clock { display: inline-flex; align-items: center; gap: 6px; }
+.urgency__unit {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  background: rgba(0, 0, 0, 0.34);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 4px;
+  padding: 3px 7px;
+}
+.urgency__unit b {
+  font-family: var(--f-mono);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;  /* digits don't jitter as the clock ticks */
+  color: #fff;
+  min-width: 1.7ch;
+  text-align: center;
+}
+.urgency__unit i {
+  font-family: var(--f-cond);
+  font-style: normal;
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--cta-bg);   /* orange unit ticks */
+}
+
+/* ---------- 5. TOPBAR ---------- */
+.topbar {
+  background: var(--paper-2);          /* deeper cream band, set off from the page */
+  border-bottom: 1px solid var(--paper-edge);  /* thin divider under the bar */
+  color: var(--ink);
+  position: relative;
+  z-index: 20;
+}
+.topbar__inner {
+  /* uncapped like the hero container below it: the wordmark/nav hug the
+     viewport edges at every width, staying outboard of the hero copy */
+  padding: 20px var(--pad) 8px;
+  display: flex;
+  align-items: flex-start;        /* align nav row to the top (SITEVOLT) line, per ref */
+  justify-content: space-between;
+}
+.wordmark { display: flex; flex-direction: column; line-height: 0.9; }
+.wordmark__name {
+  font-family: var(--f-head);
+  font-size: 31px;
+  letter-spacing: 0.005em;
+}
+.wordmark__sub {
+  font-family: var(--f-head);
+  font-size: 31px;
+  letter-spacing: 0.02em;
+  padding-left: 1px;
+}
+.topbar__nav { display: flex; align-items: center; gap: 30px; margin-top: 3px; /* optically center on the SITEVOLT line */ }
+.topbar__link {
+  font-family: var(--f-cond);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 14px;
+  opacity: 1;
+  /* grow the tap target to meet WCAG 2.2 AA (24px min) without shifting
+     layout: vertical padding is cancelled by an equal negative margin, so
+     the bar height and optical alignment stay identical. */
+  display: inline-block;
+  padding-block: 8px;
+  margin-block: -8px;
+}
+.topbar__link:hover { opacity: 0.7; }
+
+/* Topbar CTA: sticker with ink outline (CTA color via tokens) */
+.topbar__nav .pill {
+  background: var(--cta-bg);
+  color: var(--cta-ink);
+  border: 2.5px solid var(--ink);
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  padding: 11px 24px;
+}
+.topbar__nav .pill:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.04);
+}
+.topbar__nav .pill:active {
+  transform: translateY(2px);
+}
+
+/* ---------- 6. SECTIONS (built per iteration) ---------- */
+/* placeholder min-heights so the skeleton is visible before each
+   section is built; removed as each section gets real content. */
+.section:empty { min-height: 120px; }
+.case-a.section:empty,
+.funnel.section:empty { min-height: 360px; }
+
+/* ===== HERO (§2) ===== */
+.hero { padding: 52px 0 190px; overflow: hidden; }
+/* torn-paper rip forming the hero's bottom edge (scraps taped along the tear) */
+.hero__rip {
+  position: absolute;
+  left: -4px;
+  bottom: -2px;
+  width: calc(100% + 8px);
+  max-width: none;  /* the global img{max-width:100%} clamped the +8px bleed,
+                       leaving a 4px strip of the blueprint column exposed at
+                       the right viewport edge for the rip's full height */
+  height: auto;
+  z-index: 4;
+  pointer-events: none;
+  user-select: none;
+  /* charcoal asset is pre-baked to --dark (#232220) so the tear matches the
+     trusted section below EXACTLY (CSS filter recoloring renders
+     inconsistently across browsers); offsets negative — the paper overlaps
+     the collage ABOVE, so its cast shadow rises from the tear. The 4px side
+     bleed hides the scan's semi-transparent edge columns; the clip-path cuts
+     the drop-shadow tail below the bottom edge so no dark line is cast onto
+     the band underneath */
+  filter: drop-shadow(0 -2px 3px rgba(0,0,0,0.28)) drop-shadow(0 -6px 9px rgba(0,0,0,0.14));
+  clip-path: inset(-60px -20px 0 -20px);
+}
+.hero__grid {
+  display: grid;
+  grid-template-columns: 1.5fr 0.5fr;   /* more room for copy; Tesla overflows his cell */
+  align-items: center;
+  gap: 20px;
+}
+/* Hero eyebrow — stamped tag above the H1 so the headline reads as the
+   anchored top of a hero composition instead of copy floating mid-page.
+   Blue = --volt-blue-bright, the SAME ink as the scribble underlines, so the
+   chip and the "$1" underline read as one hand. Tight 14px gap below (less
+   than the H1→sub gap) locks eyebrow+headline into a single unit. */
+.hero__eyebrow {
+  display: inline-block;
+  background: var(--volt-blue-bright);
+  color: var(--paper);
+  font-size: 14px;
+  letter-spacing: 0.24em;
+  padding: 6px 12px 5px 15px;   /* extra left pad rebalances the tracking gap after the last letter */
+  margin: 0 0 14px;
+  transform: rotate(-1.2deg);
+  transform-origin: left bottom;
+}
+@media (max-width: 640px) {
+  .hero__eyebrow { font-size: 12px; padding: 5px 10px 4px 13px; margin-bottom: 12px; }
+}
+.hero__title {
+  font-family: var(--f-head);   /* wide, heavy gothic (matches reference) */
+  font-weight: 400;
+  font-size: clamp(38px, 4.9vw, 70px);   /* 3 stacked lines; longest ("PULL THE PLUG") clears the Tesla art */
+  line-height: 0.95;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  text-transform: uppercase;
+  position: relative;
+}
+/* small blue spark above-left of "POWER" (mockup) */
+.hero__spark {
+  position: absolute;
+  top: -0.42em; left: -0.55em;
+  width: 0.55em; height: 0.55em;
+  pointer-events: none;
+}
+/* small blue bolt right of "UP" (mockup) */
+.hero__bolt {
+  position: absolute;
+  top: -0.34em;
+  margin-left: 0.18em;
+  width: 0.42em; height: 0.6em;
+  pointer-events: none;
+}
+/* exactly two lines: "WEBSITES LIVE IN" / "14 DAYS FOR ONLY $1" — nowrap both
+   so neither can wrap into a 3rd line; font clamps below size them to fit */
+.hero__line1 { white-space: nowrap; }
+.hero__line2 { white-space: nowrap; }
+/* hand-drawn double scribble under "PIPELINE." */
+.hero__ul { position: relative; display: inline-block; white-space: nowrap; }
+.hero__ul::after {
+  content: "";
+  position: absolute;
+  left: 0; right: -1%;
+  bottom: -0.13em;
+  height: 0.15em;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 24' preserveAspectRatio='none'%3E%3Cpath d='M4 9 C70 3 150 4 230 6 C262 7 282 8 296 10' fill='none' stroke='%232f6bff' stroke-width='6.5' stroke-linecap='round'/%3E%3Cpath d='M10 19 C80 14 170 16 250 15 C270 15 284 15 292 14' fill='none' stroke='%232f6bff' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  pointer-events: none;
+}
+/* hero copy scales with the headline past 1440 (clamp mins = the 1440 sizes)
+   so the left-anchored block keeps pace with the growing title */
+.hero__sub {
+  font-size: var(--fs-lead-hero);   /* scales down at narrow widths so the body doesn't sit at a flat 17px floor while the title shrinks toward it (ratio was ~2.3:1 at ~484px) */
+  line-height: 1.5;
+  max-width: clamp(540px, 37.5vw, 720px);   /* clears the Tesla art overlay */
+  margin: 24px 0 26px;
+  color: #2a2a28;
+  text-wrap: pretty;   /* no single-word orphan on the last line */
+}
+.hero__bullets {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 34px;
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-content: start;
+  gap: 13px 46px;
+  max-width: clamp(560px, 39vw, 750px);
+}
+.hero__bullets li {
+  display: flex;
+  align-items: flex-start;   /* tick pins to the FIRST text line so a wrapped
+                                item's check stays row-aligned with its neighbour */
+  gap: 11px;
+  font-size: clamp(16px, 1.12vw, 21px);
+  font-weight: 500;
+  line-height: 1.3;
+  color: #1d1d1b;
+}
+/* tick tracks the li font-size (0.94em/0.81em = the 15x13px box at 16px);
+   nudged down to sit on the text cap-height of the first line */
+.hero__bullets .tick { width: 0.94em; height: 0.81em; margin-top: 0.26em; }
+/* bare blue check bullet (no box — matches mockup hero bullets) */
+.tick {
+  flex: 0 0 auto;
+  width: 15px; height: 13px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 26'%3E%3Cpath d='M3 14 L11 22 L27 3' fill='none' stroke='%232f6bff' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+/* round blue dot bullet marker */
+.dot {
+  flex: 0 0 auto;
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  background: var(--volt-blue);
+}
+/* small blue check token */
+.chk {
+  flex: 0 0 auto;
+  width: 18px; height: 18px;
+  border-radius: 5px;
+  background: var(--volt-blue);
+  position: relative;
+}
+.chk::after {
+  content: "";
+  position: absolute;
+  left: 6px; top: 3px;
+  width: 4px; height: 8px;
+  border: solid #fff;
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg);
+}
+/* reserve room for the pill's underline scribble (extends 16px below the
+   pill) so it never strikes through the spot-meter line beneath */
+.hero__cta { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
+/* CTA pill + hand-drawn blue scribble underline beneath it */
+.hero__pill {
+  position: relative;
+  font-size: clamp(20px, 1.39vw, 26px);
+  padding: 0.9em 2em;   /* = 18px 40px at the 20px base, scales with the type */
+  background: var(--cta-bg);
+  color: var(--cta-ink);
+  border: 2.5px solid var(--ink);
+}
+.hero__pill:hover { filter: brightness(1.04); }
+/* the arrow doodle squeezes the pill into 3 wrapped lines at phone width */
+@media (max-width: 480px) {
+  /* compact, self-sizing pill (not a chunky full-width block) — still ≥44px tall */
+  .hero__pill { font-size: 15px; padding: 12px 22px; }
+}
+.hero__pill::after {
+  content: "";
+  position: absolute;
+  left: 4%; right: 4%;
+  bottom: -26px;
+  height: 14px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 22' preserveAspectRatio='none'%3E%3Cpath d='M6 7 C90 2 210 4 294 8' fill='none' stroke='%232f6bff' stroke-width='4' stroke-linecap='round'/%3E%3Cpath d='M12 16 C100 12 200 14 288 13' fill='none' stroke='%232f6bff' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  pointer-events: none;
+}
+.hero__arrow { width: 92px; height: 56px; transform: translateY(-10px); flex: 0 0 auto; }
+/* art is anchored to the bottom of the hero so the torn-paper rip
+   clips Tesla off at the bottom edge (matches target) */
+.hero__art {
+  align-self: stretch;
+  position: relative;
+  z-index: 1;            /* below .hero__rip (z 4) so the tear overlaps it */
+}
+.hero__art img {
+  position: absolute;
+  /* anchor the art's RIGHT edge to the viewport (not the grid cell): the
+     hero container is uncapped, so the cell right edge sits pad-hero from
+     the viewport edge; subtracting that converts a viewport gap into cell
+     coordinates. Resolves to the original -160px at 1280; at 1920/2560 the
+     coil tower keeps reaching the blueprint border column */
+  right: calc(-1 * (var(--pad-hero) - clamp(8px, 1.2vw, 60px)));
+  bottom: -130px;        /* very bottom clipped by the torn rip */
+  /* steeper-than-46vw slope: shrinks harder below 1280 so the art clears the
+     copy column at ~1024, grows past the old 640px cap so it balances wide
+     viewports; hits 584px at 1280 (parity with the build width) */
+  /* cap = the 62vw value at 1920 (was 800px = ~1440): keeps the art growing
+     toward the copy column on wide screens instead of stranding mid-gap */
+  width: clamp(380px, calc(62vw - 210px), 980px);
+  max-width: none;
+  height: auto;
+  filter: drop-shadow(0 10px 18px rgba(0,0,0,0.1));
+}
+
+/* keep the bullets as a 2x2 block of single-line items (matches target);
+   tighten type + gap so the right column clears the bottom-anchored Tesla */
+@media (max-width: 1400px) {
+  .hero__bullets { gap: 13px 18px; max-width: 540px; }
+  .hero__bullets li { font-size: 14px; }
+}
+
+/* Above the single-column breakpoint the bullets sit as a 2x2 block with room
+   to spare, so pin each to one line (stops "$99"/"Guarantee" orphaning). Below
+   860px the hero stacks and the columns get narrow, so let them wrap freely. */
+@media (min-width: 861px) {
+  .hero__bullets li { white-space: nowrap; }
+}
+
+/* Phones keep the 2x2 block: every bullet is short enough to hold one line
+   ("Fee: $8,500 $1" is the widest), so two columns halve the hero's height
+   without mid-phrase wraps. nowrap guards the pairs at ultra-narrow widths. */
+@media (max-width: 540px) {
+  .hero__bullets { gap: 11px 22px; }
+  .hero__bullets li { font-size: 14px; white-space: nowrap; }
+  /* The nowrap 2-line title caps at 8.4vw-5.2px on phones while the sub sits
+     on its 15px clamp floor, compressing the head:lead ratio to ~1.8:1 (system
+     target ~2.5:1) — the paragraph outweighed the headline. 14px joins the sub
+     to the bullets' tier and restores ~2:1 at 390px / ~2.5:1 at 480px. */
+  .hero__sub { font-size: 14px; }
+}
+
+@media (max-width: 860px) {
+  .hero__grid { grid-template-columns: 1fr; }
+  /* Single-column hero: the desktop clamp floors at 34px and the 4.3vw term
+     can't beat it until ~790px, so the headline was stuck tiny across this whole
+     band while the wordmark loomed beside it. Scale it with the viewport again.
+     Doubled class (.hero__title.hero__title--offer) outranks the later base
+     .hero__title--offer clamp, which would otherwise win on source order. */
+  /* Sized so the widest headline line ("14 DAYS FOR ONLY $1", ~11.9em in
+     Archivo Black) fills the copy column — both lines are nowrap, so an
+     oversized font would clip, not wrap. This 769-860 band has ~100px
+     gutters (--pad-hero with the 74px border tiles): (100vw - 200px)/11.9
+     with ~4px slack. */
+  .hero__title.hero__title--offer { font-size: clamp(18px, calc(8.4vw - 17px), 58px); }
+  /* Tesla drops BELOW the copy (order:0 keeps DOM order) and sits over the
+     torn rip at the section's bottom edge — same clipped look as desktop */
+  .hero__art { order: 0; align-self: auto; max-width: 330px; margin: 22px auto 0; }
+  .hero__art img { position: static; width: 100%; max-width: 330px; right: auto; bottom: auto; }
+  /* the CTA arrow points at the pill FROM the art's gap; once the art drops
+     below the copy (single column) the arrow has no referent and strands in
+     dead space to the pill's right — hide it across the whole single-col range
+     (was only hidden ≤480, so it reappeared 481–860 and wrapped the pill) */
+  .hero__arrow { display: none; }
+}
+@media (max-width: 768px) {
+  /* Phone gutters are 30px each side (--pad-hero), so the max size that keeps
+     line 2 inside them is (100vw - 60px)/11.9 = 8.4vw - 5.04px — minus ~2px of
+     ink slack for font-metric wiggle. A flat vw coefficient can't track
+     fixed-px gutters, and its safety margin piled up as extra space on the
+     RIGHT (text is left-aligned). */
+  .hero__title.hero__title--offer { font-size: clamp(18px, calc(8.4vw - 5.2px), 58px); }
+}
+
+/* ===== TRUSTED (§3) — reusable scribble helper ===== */
+.scribble {
+  font-family: var(--f-scribble);
+  font-weight: 700;
+  text-transform: lowercase;
+  color: var(--ink);
+}
+/* dark charcoal panel (same --dark as the testimonials band) revealed by the
+   hero page-rip (charcoal asset pre-baked to --dark); the cream tear at its
+   bottom (torn-bottom torn--cream) closes the panel — the next page rips
+   away too */
+.trusted {
+  padding-top: 14px;
+  padding-bottom: var(--torn-h, 42px);
+  background: var(--dark);
+}
+.trusted__eyebrow {
+  text-align: center;
+  font-family: var(--f-head);
+  text-transform: uppercase;
+  /* MUST stay one line at every width: nowrap + the outer min() lets the size
+     fall below the 32px clamp floor on narrow phones (5.9vw < 32px under
+     ~543px) so the phrase shrinks instead of wrapping — with breathing room
+     at the edges. Desktop curve is unchanged (4.4vw branch is always the
+     smaller one there). */
+  font-size: min(clamp(32px, 4.4vw, 46px), 5.9vw);
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+  color: var(--paper);
+  margin: 0 0 18px;
+}
+.trusted__eyebrow .scribble {
+  color: var(--paper);
+  font-size: 1.13em; /* tracks the eyebrow size so the line can't outgrow it */
+  letter-spacing: 0;
+  margin: 0 6px;
+  display: inline-block;
+  transform: rotate(-6deg);
+}
+/* ransom-note "TRUSTED" — mixed cut-out letters */
+.ransom { display: inline-flex; align-items: flex-end; gap: 1px; vertical-align: -3px; }
+.ransom span {
+  display: inline-block;
+  line-height: 1;
+  font-family: var(--f-head);
+  padding: 0 2px;
+}
+.ransom span:nth-child(odd)  { transform: rotate(-4deg); }
+.ransom span:nth-child(even) { transform: rotate(4deg); }
+.ransom span:nth-child(1) { font-family: var(--f-mono); font-weight: 700; background: var(--paper); color: var(--ink); padding: 2px 5px; }
+.ransom span:nth-child(2) { font-family: var(--f-display); font-size: 1.08em; }
+.ransom span:nth-child(3) { font-family: Georgia, "Times New Roman", serif; font-weight: 700; }
+.ransom span:nth-child(4) { font-family: var(--f-cond); font-weight: 700; background: var(--paper); color: var(--ink); padding: 2px 5px; }
+.ransom span:nth-child(5) { font-family: var(--f-display); font-size: 1.08em; }
+.ransom span:nth-child(6) { font-family: var(--f-mono); font-weight: 700; border: 2px solid var(--paper); padding: 0 4px; }
+.ransom span:nth-child(7) { font-family: var(--f-head); }
+.trusted__band {
+  background: var(--dark);
+  padding: 10px 0 26px; /* full-bleed marquee: side inset handled by the edge fade */
+}
+/* real client logos — baked to cream, presented as a continuously scrolling
+   proof banner. The track holds two identical copies of the list and slides
+   left by exactly one copy's width (translateX(-50%)), so the loop is
+   seamless at any width; a mask fades the marks in/out at the edges instead
+   of hard-clipping them. Hairline rules top & bottom keep the "proof strip"
+   framing. */
+.trusted__marquee {
+  max-width: 1440px;
+  margin: 0 auto;
+  overflow: hidden;
+  border-top: 1px solid rgba(244, 236, 223, 0.12);
+  border-bottom: 1px solid rgba(244, 236, 223, 0.12);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
+}
+.trusted__track {
+  display: flex;
+  width: max-content;
+  animation: trusted-scroll 32s linear infinite;
+}
+.trusted__marquee:hover .trusted__track { animation-play-state: paused; }
+.trusted__logos {
+  /* each copy carries half the inter-logo gap as side padding, so the seam
+     between copy 1 and copy 2 gets exactly one full gap — even rhythm */
+  --tl-gap: clamp(40px, 4.5vw, 64px);
+  list-style: none;
+  margin: 0;
+  padding: 30px calc(var(--tl-gap) / 2);
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--tl-gap);
+}
+@keyframes trusted-scroll {
+  to { transform: translateX(-50%); }
+}
+.tlogo { display: flex; align-items: center; justify-content: center; }
+.tlogo img {
+  display: block;
+  width: auto;
+  height: 32px;                 /* normalize wordmarks by cap height */
+  opacity: 0.82;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.tlogo:hover img { opacity: 1; transform: translateY(-2px); }
+/* per-logo optical balancing — emblem/stacked marks need more height,
+   thin wide wordmarks need less so they don't dominate the row */
+.tlogo--wine   img { height: 27px; }
+.tlogo--valley img { height: 48px; }
+.tlogo--cuddle img { height: 54px; }
+.tlogo--amg    img { height: 46px; }
+@media (max-width: 760px) {
+  .trusted__logos { --tl-gap: 34px; padding-top: 22px; padding-bottom: 22px; }
+  .tlogo img { height: 26px; opacity: 0.85; }
+  .tlogo--wine   img { height: 22px; }
+  .tlogo--valley img { height: 40px; }
+  .tlogo--cuddle img { height: 46px; }
+  .tlogo--amg    img { height: 42px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* no auto-motion: show one copy as the old static centered strip */
+  .trusted__track { animation: none; width: 100%; }
+  .trusted__logos { width: 100%; flex-wrap: wrap; justify-content: center; row-gap: 26px; }
+  .trusted__logos[aria-hidden="true"] { display: none; }
+  .trusted__marquee { -webkit-mask-image: none; mask-image: none; }
+}
+
+/* ===== DIALED-IN (§4) ===== */
+/* mockup layout: oversized two-line headline w/ blue spark scribbles (left),
+   big bare italic kicker w/ blue underline + swash (no black strip), large
+   portrait circle hanging center-right past the bubble, narrower dark speech
+   bubble w/ serif centered text + tail pointing at the face, pill centered
+   over the bubble's bottom edge w/ a blue swash beneath */
+.dialed-in { padding: 54px 0 120px; }
+.dialed__wrap { position: relative; }
+.dialed__head { position: relative; max-width: 72%; }
+.dialed__spark { position: absolute; }
+.dialed__spark--left { left: -54px; top: -16px; width: 36px; transform: rotate(-12deg); }
+.dialed__spark--top { left: 47%; top: -38px; width: 32px; transform: rotate(24deg); }
+.dialed__title {
+  font-family: var(--f-head);
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: var(--fs-h1);   /* statement head — same tier as the hero H1 (was 6.12vw/86px, out-sizing the hero) */
+  line-height: 0.95;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+  color: var(--ink);
+}
+.dialed__kicker {
+  position: relative;
+  display: inline-block;
+  color: var(--ink);
+  font-family: var(--f-head);
+  font-style: italic;
+  text-transform: uppercase;
+  font-size: var(--fs-h4);   /* kicker tracks the h1-tier title at the shared sub-head size */
+  line-height: 1.18;
+  letter-spacing: 0.01em;
+  /* Wrap the kicker in the clear zone left of the tucked portrait so the copy
+     never runs under the image; the head reverts to full width once stacked. */
+  max-width: 85%;
+  margin: 14px 0 0;
+}
+.dialed__kicker-ul {
+  white-space: nowrap;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 14' preserveAspectRatio='none'%3E%3Cpath d='M4 8 C60 4 140 5 196 7' fill='none' stroke='%232f6bff' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 100% 0.24em;
+  padding-bottom: 0.16em;
+}
+.dialed__art {
+  position: absolute;
+  top: clamp(36px, 5.5vw, 84px);
+  right: -10px;
+  width: clamp(340px, 44vw, 580px);
+  z-index: 2;
+}
+.dialed__art img { width: 100%; height: auto; }
+.dialed__bubble {
+  position: relative;
+  margin-top: 44px;
+  width: 57%;
+  background: #1d1c1a;
+  color: #f3ecdf;
+  border-radius: 26px;
+  padding: 38px 48px 52px;
+  z-index: 3;
+}
+/* speech-bubble tail pointing right at the portrait */
+.dialed__bubble::before {
+  content: "";
+  position: absolute;
+  right: -44px;
+  top: 52%;
+  border: solid transparent;
+  border-width: 26px 0 12px 52px;
+  border-left-color: #1d1c1a;
+}
+.dialed__body {
+  font-family: var(--f-body);
+  font-size: var(--fs-lead-hero);   /* bubble lead = hero-sub scale (h1-tier section) */
+  font-weight: 600;
+  line-height: 1.24;
+  letter-spacing: -0.015em;
+  text-align: center;
+  text-wrap: balance;
+  color: #f5efe3;
+  margin: 0;
+}
+.quote-mark {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  color: var(--volt-blue-bright);
+  line-height: 0.7;
+  font-size: clamp(76px, 7.5vw, 110px);
+  position: absolute;
+}
+/* between the stack point and ~1100 the 57%-wide bubble can't hold the hook's
+   br-set second line at 22px — an "up." widow wraps off it. Drop the hard
+   break there and let text-wrap: balance set even lines. */
+@media (min-width: 821px) and (max-width: 1100px) {
+  .dialed__body-br { display: none; }
+}
+.quote-mark--open { left: -22px; top: -34px; }
+/* mirror the open mark: ride the bubble's bottom-right corner (was -64px,
+   which dropped it into the cream beside the pill, unanchored) */
+.quote-mark--close { right: -18px; bottom: -32px; }
+.dialed__pill {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translate(-50%, 50%);
+  white-space: nowrap;
+}
+/* preserve the centering translate — the generic .pill:hover transform would replace it */
+.dialed__pill:hover { transform: translate(-50%, 50%) translateY(-2px); }
+.dialed__pill:active { transform: translate(-50%, 50%) translateY(1px); }
+.dialed__pill-swash {
+  position: absolute;
+  left: 50%;
+  bottom: -52px;   /* hugs the pill so they read as one mark (was -60px, adrift) */
+  transform: translateX(-50%);
+  width: 170px;
+  height: 14px;
+}
+@media (max-width: 820px) {
+  /* stacked, every other piece (avatar, bubble copy, pill, swash) is centered —
+     center the head too so the section reads as one column, matching the
+     rr/dyk mobile treatment */
+  .dialed__head { max-width: none; text-align: center; }
+  /* title is nowrap by default; at the smallest phones (~≤357px) the 40px floor
+     line ("OLD WEBSITE" ≈314px) is wider than the gutters and clips. Let it wrap
+     (only kicks in when it can't fit — stays the designed 2-line shape at 375+). */
+  .dialed__title { white-space: normal; }
+  /* even out the two-line wrap on phone (was a long top line + short widow at 390) */
+  .dialed__kicker { max-width: none; text-wrap: balance; margin-top: 12px; }
+  .dialed__kicker-br { display: none; }
+  .dialed__spark { display: none; }
+  /* Stacked, the desktop scene (bubble tail → portrait at its right) falls
+     apart: the full illustration's Tesla coil reads as a stray black pipe at
+     phone size. Crop to a circular avatar of the spokesman and hang it over
+     the bubble's top edge — image, quote, and CTA become one testimonial
+     unit instead of pieces floating in cream. */
+  .dialed__wrap { display: flex; flex-direction: column; }
+  .dialed__head { order: 1; }
+  .dialed__art {
+    order: 2;
+    position: relative;
+    top: 0;      /* neutralize the desktop rule's relative offsets */
+    right: 0;
+    width: 132px;
+    height: 132px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 26px auto -66px;
+    z-index: 4;
+    background: #6d97e8; /* portrait's halftone blue — fills any crop slack */
+  }
+  /* zoom the source so the sticker circle (left ~2/3 of the art) fills the
+     frame; the coil half falls outside the crop */
+  .dialed__art img {
+    position: absolute;
+    max-width: none;
+    width: 152%;
+    left: -2%;
+    top: -10%;
+  }
+  /* top pad = 66px hidden under the overlapping avatar + a small gap to the hook */
+  .dialed__bubble { order: 3; width: auto; margin-top: 0; padding: 74px 10px 38px; }
+  .dialed__bubble::before { display: none; }
+  /* the hook is the one display moment inside the bubble — a step up from the
+     15px turn (weight alone wasn't separating them) with room between lines */
+  .dialed__body { font-size: max(16px, var(--fs-lead-hero)); line-height: 1.35; }
+  /* balance shortens every line to even them out, which reads as oversized side
+     gutters at phone widths — let the turn fill the bubble's measure instead
+     (extra class beats the base .dialed__body--turn rule, which is later in file) */
+  .dialed__body.dialed__body--turn { text-wrap: wrap; }
+  /* at 16px the br-set second line ("Your website doesn't back them up.")
+     overruns the bubble measure below ~400 and rewraps mid-phrase */
+  @media (max-width: 400px) {
+    .dialed__body { font-size: 15px; }
+  }
+  /* below ~375 even 15px can't hold that line — drop the hard break and let
+     text-wrap: balance set even lines instead of an overflow widow */
+  @media (max-width: 374px) {
+    .dialed__body-br { display: none; }
+  }
+  /* both quote marks go: the close was already dropped (landed on the pill),
+     and a lone open quote just floats in cream beside the avatar — the
+     portrait hanging over the bubble already says "he's speaking" */
+  .quote-mark--open,
+  .quote-mark--close { display: none; }
+}
+
+/* ===== REAL RESULTS (§5) ===== */
+.real-results { padding: 30px 0 72px; }
+/* the container only holds the centered title now — the phones marquee is a
+   full-bleed sibling; padding just keeps the title clear of the columns */
+.real-results > .container { padding: 0 calc(var(--border-w) - 24px); }
+@media (max-width: 768px) {
+  .real-results > .container { padding: 0 var(--pad-hero); }
+}
+.rr__title {
+  text-align: center;
+  font-family: var(--f-head);
+  font-weight: 400;   /* true Archivo Black — no synthetic bold (h2 UA default) */
+  text-transform: uppercase;
+  font-size: var(--fs-h3);
+  /* display leading like the sibling section titles (.proc__title, .cs__head);
+     without this the body's 1.5 leaks in and gaps the two-line phone wrap */
+  line-height: 1.05;
+  letter-spacing: 0.005em;
+  color: var(--ink);
+  margin-bottom: 44px;
+  /* even out the two-line phone wrap (390 stranded "REAL" then "BIG RESULTS.").
+     No-op on desktop where the title is forced single-line (nowrap, ≥821px below). */
+  text-wrap: balance;
+}
+/* single line on desktop, as in the mockup */
+@media (min-width: 821px) { .rr__title { white-space: nowrap; } }
+/* phone: --fs-h3's 3.1vw term is dead this small (floored at 26px), which
+   leaves the title undersized next to .dialed__title/.proc__title — retrack
+   with the viewport. 7.2vw keeps the longer balanced line ("REAL BIG
+   RESULTS.", ~11.2em ink) inside the --pad-hero gutters down to ~360px. */
+@media (max-width: 820px) { .rr__title { font-size: clamp(26px, 7.2vw, 34px); } }
+/* hand-drawn blue underline under a word — same treatment as "DIALED IN.",
+   long stroke + shorter second scribble beneath, as in the banner ref */
+.rr__ul {
+  white-space: nowrap;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 22' preserveAspectRatio='none'%3E%3Cpath d='M4 6 C60 2 140 3 196 5' fill='none' stroke='%232f6bff' stroke-width='4.5' stroke-linecap='round'/%3E%3Cpath d='M28 15 C90 11 150 12 180 13' fill='none' stroke='%232f6bff' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 100% 0.34em;
+  padding-bottom: 0.28em;
+}
+/* banner marquee: two identical .rr__set copies ride in one max-content
+   track; each set carries its trailing gap as padding-right, so sliding the
+   track by -50% (= exactly one set incl. its gap) and looping is seamless. */
+.rr__marquee {
+  --rr-gap: clamp(16px, 3vw, 58px);
+  position: relative;
+  z-index: 1;                /* over the blueprint border columns, like .container content */
+  overflow: hidden;
+  /* padding gives the phone drop-shadows room inside the clip; the negative
+     margins hand that space back so the section rhythm is unchanged */
+  padding: 8px 0 40px;
+  margin: -8px 0 -40px;
+}
+.rr__track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: rr-marquee 60s linear infinite;
+}
+.rr__set {
+  flex: 0 0 auto;
+  display: flex;
+  gap: var(--rr-gap);
+  padding-right: var(--rr-gap);
+}
+@keyframes rr-marquee {
+  to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rr__track { animation: none; }
+}
+/* identical CSS-drawn frame around each cropped screen, so every phone
+   shares the same size and bezel style */
+.rr__phone {
+  /* 8 phones/set × 14vw > 100vw, so one set always overfills the viewport
+     and the -50% loop never exposes a gap; the 150px floor keeps them
+     readable on small screens where 14vw would shrink to nothing */
+  width: max(150px, 14vw);
+  flex: 0 0 auto;
+  margin: 0;
+  position: relative;
+  background: #101014;
+  padding: 7px;
+  border-radius: 13.5% / 6.4%;
+  box-shadow: 0 0 0 2px #4b4b53, 0 14px 22px rgba(0,0,0,0.16);
+}
+/* white placeholder screen — real screenshots drop in here later */
+.rr__screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  aspect-ratio: 331 / 708;   /* same ratio as the original screen art */
+  background: #fff;
+  border-radius: 11.5% / 5.5%;
+  padding: 5% 10% 9%;
+}
+.rr__ph-notch {
+  width: 34%;
+  height: 2.6%;
+  border-radius: 99px;
+  background: #101014;
+  margin-bottom: 9%;
+}
+.rr__ph-block {
+  width: 100%;
+  height: 38%;
+  border-radius: 10px;
+  background: #ececf0;
+  margin-bottom: 10%;
+}
+.rr__ph-line {
+  width: 86%;
+  height: 2.4%;
+  border-radius: 99px;
+  background: #ececf0;
+  margin-bottom: 5.5%;
+}
+.rr__ph-line--lg { width: 100%; height: 3.4%; background: #e0e0e6; }
+.rr__ph-line--sm { width: 60%; }
+.rr__ph-btn {
+  margin-top: auto;
+  width: 64%;
+  height: 5.2%;
+  border-radius: 99px;
+  background: #e0e0e6;
+}
+/* side buttons */
+.rr__phone::before,
+.rr__phone::after {
+  content: "";
+  position: absolute;
+  width: 3px;
+  background: #3d3d45;
+  border-radius: 2px;
+}
+.rr__phone::before { left: -4px; top: 21%; height: 8%; }
+.rr__phone::after { right: -4px; top: 25%; height: 12%; }
+
+/* reusable blue scribble underline under a word */
+.ul-blue { position: relative; white-space: nowrap; font-weight: 600; }
+.ul-blue::after {
+  content: "";
+  position: absolute;
+  left: -3%; right: -3%; bottom: -0.18em;
+  height: 0.18em;
+  background: var(--volt-blue);
+  border-radius: 50%;
+  transform: rotate(-1.2deg);
+}
+
+/* ===== DID YOU KNOW (§6) ===== */
+/* centered stack (pill / one-line title / 2-line sub); hand anchored
+   bleeding off the bottom-left, sticker overlapping right of the copy */
+.did-you-know { padding: 46px 0 max(60px, 12.5vw); overflow: hidden; }  /* bottom pad tracks the testimonials page-rip overhang (~11.3vw of viewport, uncapped) so its scraps overlap blank cream, not copy */
+/* the mockup composes this band border-to-border (bulb hugging the left
+   blueprint column, sticker overhanging toward the right one), so the
+   container tracks the borders instead of the centered 1400px box on wide
+   screens — same move as the hero. Copy stays on true page center via the
+   equal flexible side tracks below. */
+.did-you-know .container { max-width: none; }
+.dyk__grid {
+  display: grid;
+  /* equal flexible side tracks keep the copy on the true page center —
+     auto sides skewed it right (200px art vs ~140px sticker) */
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 28px;
+  position: relative;
+}
+.dyk__art { width: 200px; justify-self: start; align-self: stretch; position: relative; }
+.dyk__art img {
+  position: absolute;
+  left: -150px;
+  /* WIDTH-driven at the reference-ad proportion (bulb glass ≈ 12.5% of the
+     canvas → whole art ≈ 30vw, glass left edge tucked ~2% off the canvas
+     edge): sized so the bulb TIP rides near the band top, level with the
+     pill, like the reference composition. The opaque glass stays left of
+     the centered headline; only the sparse lightning scribbles approach
+     "DID", same as the reference.
+     BOTTOM-anchored so the hand cuff stays buried under the testimonials
+     tear. The bleed grows steeper than the art (37vw slope) because the
+     band height stops tracking the art's 30.3vw growth past ~1280 — the
+     extra art height has to sink below the band (hidden under the tear,
+     arm running into the torn edge like the ad) so the bulb TIP stays
+     pinned ~45px below the band top instead of poking above it */
+  bottom: calc(-1 * clamp(60px, 37vw - 380px, 410px));
+  width: min(30.3vw, 582px);
+  height: auto;
+  max-width: none;
+}
+.dyk__copy { text-align: center; }
+/* mockup type scale: pill text caps ~1.4% of canvas, headline caps ~7%,
+   sub caps ~2% — all tracked as vw so the section keeps the ad-graphic scale */
+.dyk__pill {
+  margin: 0 auto 24px;
+  font-size: clamp(15px, 1.9vw, 27px);
+  letter-spacing: 0.08em;
+  padding: 13px 30px;
+}
+.dyk__title {
+  font-family: var(--f-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: clamp(54px, 8.1vw, 118px);
+  letter-spacing: 0.01em;
+  line-height: 1;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.dyk__sub {
+  font-size: clamp(20px, 3vw, 42px);
+  font-weight: 500;
+  line-height: 1.35;
+  margin-top: 14px;
+  color: #232321;
+  /* cap the line length so the centered copy stays clear of the bulb art
+     (left bleed) and the starburst sticker (right overhang). The center grid
+     track sizes to the nowrap title (~768px@1280, ~840px@1440), and 31ch
+     resolves to ≈ that full track width — so the sub's long lines filled the
+     whole box and ran ~158px under the bulb / ~82px under the sticker at
+     1280–1440 (the shorter title glyphs cleared, the sub didn't). The 34vw
+     term binds at the squeezed mid widths to hold the lines inside the
+     bulb→sticker clear zone; the 31ch cap still governs ≥~1900 where the
+     bulb is proportionally small and the reference-width composition clears. */
+  max-width: min(31ch, 34vw);
+  margin-left: auto;
+  margin-right: auto;
+  /* even the line lengths so the last line isn't a lone orphan ("brands." at 390).
+     balance only shortens the longest line, so it can't push copy wider under the
+     bulb/sticker clear zone the max-width above protects. */
+  text-wrap: balance;
+}
+.dyk__blue { color: var(--volt-blue-bright); font-weight: 600; }
+/* starburst sticker badge (jagged seal) */
+.dyk__sticker {
+  flex: 0 0 auto;
+  justify-self: end;
+  align-self: center;
+  /* mockup: sticker rides low-right of the copy — center ~37px below the
+     sub's last line, left spikes ~29px clear of "increase", right edge
+     overhanging the container toward the viewport edge */
+  margin-top: 264px;  /* +24 vs the original 240 — the sub copy runs a line taller at its bigger scale */
+  margin-right: -72px;
+  /* svg viewBox carries 15-unit padding for the die-cut margin (230 units vs
+     the 200-unit burst), so the box is upsized 230/200 to keep the blue burst
+     at the mockup's size */
+  width: clamp(172px, 17.8vw, 298px); height: clamp(172px, 17.8vw, 298px);
+  display: flex; align-items: center; justify-content: center;
+  text-align: center;
+  /* warm white, matching the reference sticker's cream die-cut edge */
+  color: #f7f1e4;
+  background: url("assets/sticker-burst.svg") center/contain no-repeat;
+  /* reference sets the sticker square; keep just a hair of tilt so it reads
+     hand-placed against the straight copy above it */
+  transform: rotate(-4deg);
+  filter: drop-shadow(0 5px 8px rgba(20, 20, 20, 0.25));
+  position: relative;
+  /* mockup sets the sticker in sentence-case medium grotesque, not condensed caps */
+  font-family: var(--f-body);
+  font-weight: 600;
+  font-size: clamp(20px, 2.1vw, 30px);
+  line-height: 1.14;
+  letter-spacing: 0;
+}
+.dyk__sticker > span { position: relative; z-index: 1; padding: 0 6px; }
+@media (max-width: 880px) {
+  .dyk__grid { grid-template-columns: 1fr; justify-items: center; gap: 18px; }
+  .dyk__art { display: none; }
+  /* stacked: drop the sticker out of the cream band entirely — it sits in
+     the black testimonials gap below the tear, overlapping the first card's
+     top-right corner like a slapped-on seal. Absolute (not flow) so the
+     cream band doesn't keep an empty row where it used to be. The section
+     must un-hide overflow (safe here: the bulb art, the reason for the
+     clip, is display:none at this width), and the container needs z-index 2
+     because the testimonials .container is also z-index:1 and later in the
+     DOM — at equal z it would paint the card over the sticker. */
+  /* stacked: the desktop paddings (72px rr bottom + 46px dyk top) stack into
+     ~118px of dead cream between the phone marquee and the headline — cut it
+     to ~60px so the headline reads as the next beat, not a new page */
+  .real-results { padding-bottom: 40px; }
+  .did-you-know { overflow: visible; padding-top: 20px; }
+  .did-you-know .container { z-index: 2; }
+  /* stacked: CTA reads better after the pitch — flip it below the sub copy
+     (desktop keeps the reference-ad order: pill above the headline) */
+  .dyk__copy { display: flex; flex-direction: column; }
+  .dyk__pill { order: 3; margin: 26px auto 0; }
+  .dyk__sticker {
+    position: absolute;
+    /* ride off the right screen edge a touch — die-cut spikes clip, the
+       text stays inside (badge text spans ~±55px of the 156px box center) */
+    right: -26px;
+    /* sink past the section's bottom padding + the testimonials' top
+       padding (see below) + 68px of card overlap — deep enough to sit on
+       the card's top-right corner, but the burst's ink (spike radius ~78px
+       of the 90px half-box) still ends above the quote's first line and
+       clears the centered star row's right end by ~20px */
+    bottom: calc(-1 * (max(60px, 12.5vw) + 11.5vw + 138px));
+    width: 156px; height: 156px;
+    margin: 0;
+    font-size: 19px;
+    transform: rotate(10deg);
+  }
+  /* stacked: the ad-graphic vw scale bottoms out way above every other mobile
+     heading (54px floor vs the hero's 38px) — re-floor to the hero tier so the
+     band stops out-shouting the page */
+  .dyk__title { white-space: normal; font-size: clamp(38px, 10.3vw, 54px); }
+  /* stacked: the bulb art is hidden, so drop the 34vw clear-zone cap (which
+     would over-squeeze the column, ~127px at 375) and let the copy use the
+     full readable measure again. Sub drops from the 20px ad floor to the
+     lead tier (16px on phones) so the heading:body ratio matches the hero. */
+  .dyk__sub { max-width: 31ch; font-size: var(--fs-lead); margin-top: 10px; }
+}
+
+/* ===== TESTIMONIALS (§7) ===== */
+/* tall portrait cards (h/w ≈ 1.7) filling a deep band, white stars,
+   centered quote, brand pinned at the bottom (matches mockup) */
+.testimonials { padding: 104px 0 112px; background-image: none; }  /* no .dark-bg grid lines here */
+@media (max-width: 880px) {
+  /* deepen the black shelf under the tear so the DYK badge (156px, sunk in
+     from the section above) clears the torn cream edge (~11.5vw of rip) and
+     only kisses the first card's corner */
+  .testimonials { padding-top: calc(70px + 11.5vw); }
+}
+/* charcoal page-rip forming the band's top edge — the SAME tear as the hero
+   rip over the trusted band (and case-b's cs__rip): asset pre-baked to --dark
+   so the tear merges with the dark band, cast shadow rising over the cream
+   DYK band above */
+.tst__rip {
+  position: absolute;
+  top: 4px;
+  left: -4px;
+  width: calc(100% + 8px);
+  max-width: none;  /* img{max-width:100%} would clamp the side bleed (same
+                       right-edge column exposure as .hero__rip) */
+  height: auto;
+  transform: translateY(-100%);
+  z-index: 3;
+  pointer-events: none;
+  user-select: none;
+  /* side bleed hides the scan's semi-transparent edge columns; the clip cuts
+     3px INSIDE the bottom edge — the downscaled image's antialiased bottom
+     row is semi-transparent and lets the drop-shadow bleed through as a dark
+     seam line, so the cut removes it (the 4px top overlap keeps the cut
+     buried inside the dark band) */
+  filter: drop-shadow(0 -2px 3px rgba(0,0,0,0.28)) drop-shadow(0 -6px 9px rgba(0,0,0,0.14));
+  clip-path: inset(-60px -20px 3px -20px);
+}
+.tst__wrap {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.tst__arrow {
+  flex: 0 0 auto;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 44px;
+  line-height: 1;
+  cursor: pointer;
+  letter-spacing: -5px;
+  transition: color 0.15s ease;
+}
+.tst__arrow:hover { color: var(--volt-blue); }
+.tst__cards {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+.tcard {
+  border: 2.5px solid rgba(95,130,235,0.85);
+  border-radius: 26px;
+  background: rgba(255,255,255,0.018);
+  box-shadow: 0 0 18px rgba(72,132,234,0.16);
+  padding: 36px 28px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  aspect-ratio: 1 / 1.5;
+}
+.tcard__stars {
+  color: #fff;
+  font-size: 17px;
+  letter-spacing: 5px;
+  margin-bottom: 24px;
+}
+.tcard__quote {
+  color: #e7e4dc;
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  /* even the ragged right edge of the centered quotes, matching the page-wide
+     balanced-wrap treatment (hero/dialed-in/rr/dyk). Already orphan-free, so this
+     is zero-risk polish; balance only shortens the longest line. */
+  text-wrap: balance;
+}
+.tcard__brand {
+  margin-top: 18px;
+  padding-top: 20px;
+  border-top: 1.5px solid rgba(95,130,235,0.8);
+  align-self: stretch;
+  font-family: var(--f-head);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 18px;
+  color: #fff;
+}
+.tcard__brand--vibe { letter-spacing: 0.12em; }
+.tcard__brand--vibe::first-letter { color: #fff; }
+.tcard__brand--dod { font-size: 22px; letter-spacing: 0.16em; }
+@media (max-width: 820px) {
+  .tst__cards { grid-template-columns: 1fr; }
+  .tst__arrow { display: none; }
+  /* drop the 1:1.5 portrait ratio on mobile — at full width it forced ~500px
+     of mostly-empty card; let each card hug its quote instead */
+  .tcard { aspect-ratio: auto; padding: 28px 26px; }
+  .tcard__stars { margin-bottom: 16px; }
+  .tcard__quote { flex: 0 0 auto; }
+  .tcard__brand { margin-top: 22px; padding-top: 18px; }
+}
+
+/* ===== PROCESS (§8) ===== */
+/* the testimonials' cream torn-bottom closes the dark band at the section's
+   top (same tear as the trusted panel below the hero); headline + sub sit on
+   the cream band below it; Tesla anchored at the right edge OVERLAPPING the
+   torn dark→cream boundary; numerals with blue offset shadows, outline label
+   pills, ►► separators */
+.process { position: relative; }
+/* the cream tear lives entirely inside the dark band above (torn-bottom
+   strip), so the intro only needs normal breathing room at the top */
+.proc__intro { position: relative; padding: 72px 0 56px; }
+.proc__intro-inner { text-align: center; }
+.proc__title {
+  /* poster band headline like .dyk__title/.fcta__title (Anton) — was the
+     Archivo h2 tier, which read undersized/off next to DID YOU KNOW above */
+  font-family: var(--f-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  color: var(--ink);
+  /* 54px floor keeps it continuous with the phone override's 54px cap at 821;
+     5vw hits the 96px cap at 1920 */
+  font-size: clamp(54px, 5vw, 96px);
+  line-height: 1.02;
+  letter-spacing: 0.01em;
+}
+/* phone: track the viewport so "YOU JUST APPROVE IT." (8.23em ink in Anton,
+   the longer forced line) always holds ONE line inside the --pad-hero gutters:
+   fits (vw - 60px) down to 320 with ~4% slack. No stacked "APPROVE IT." */
+@media (max-width: 820px) {
+  .proc__title { font-size: clamp(30px, 11.6vw - 7px, 54px); }
+  /* trim the intro's 72px desktop headroom — under the tear it reads as a
+     dead band at phone widths — and its 56px footroom, which was sized for
+     the desktop 4-across grid and reads as a dead band above step 1 */
+  .proc__intro { padding-top: 28px; padding-bottom: 22px; }
+}
+.proc__sub {
+  position: relative;
+  display: inline-block;
+  margin-top: 16px;
+  font-size: var(--fs-lead);
+  line-height: 1.35;   /* lead leading like .dialed__body/.dyk__sub (body's 1.5 leaked in) */
+  color: var(--ink);
+  font-weight: 500;
+  text-wrap: pretty;   /* no stranded "in 14 days." on mid widths */
+}
+/* below the one-line width the inline run strands "in 14 days." on its own
+   line (at 700 it broke after "live in"). Break the lead-in onto its own
+   centered line instead (fit-content keeps its underline on the ink, not the
+   full column) and balance the rest over even lines — one line ≥641, two ≤640. */
+@media (max-width: 820px) {
+  .proc__adv { display: block; width: fit-content; margin: 0 auto 4px; }
+  .proc__sub-rest { display: block; text-wrap: balance; }
+}
+.proc__adv {
+  font-style: italic;
+  font-weight: 700;
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 1px;
+}
+.proc__arrow { position: absolute; left: -60px; top: -10px; width: 50px; height: 38px; }
+@media (max-width: 640px) { .proc__arrow { display: none; } } /* pokes in cropped at the viewport edge */
+.proc__portrait {
+  position: absolute;
+  right: -52px;          /* bleeds off the right edge so the electricity runs off screen */
+  top: max(-330px, -23vw); /* rises into the dark band above the tear */
+  z-index: 2;             /* BELOW the cream torn-bottom strip (z 3): the tear
+                             paper paints over him, so its deckle contour cuts
+                             him exactly like the page it belongs to */
+  pointer-events: none;
+  /* tear-off: he belongs to the dark band being torn away, so reveal only the
+     stretch above the process top edge (min(330px,23vw) = his rise above it,
+     +1px so the cut hides under the strip's bottom:-1px overlap); inside the
+     tear strip the cream scan's own opaque pixels cover him below the deckle */
+  -webkit-mask-image: linear-gradient(#000, #000);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100% calc(min(330px, 23vw) + 1px);
+  -webkit-mask-position: 0 0;
+  mask-image: linear-gradient(#000, #000);
+  mask-repeat: no-repeat;
+  mask-size: 100% calc(min(330px, 23vw) + 1px);
+  mask-position: 0 0;
+}
+.proc__portrait img { width: clamp(280px, 31vw, 460px); height: auto; }
+/* dark headroom in the band above; -60px lets Tesla's head overlap the last card slightly */
+@media (min-width: 821px) {
+  .testimonials { padding-bottom: calc(min(330px, 23vw) - 60px); }
+}
+
+.proc__steps-wrap { background: transparent; padding: 24px 0 52px; }
+.proc__steps-inner { position: relative; }
+.proc__squiggle { position: absolute; left: -34px; top: 30px; width: 56px; height: 38px; }
+.proc__bolt { position: absolute; right: 8px; top: -36px; width: 26px; height: 38px; transform: rotate(14deg); }
+.proc__steps {
+  list-style: none;
+  margin: 0; padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 22px;
+}
+.pstep { position: relative; text-align: center; }
+/* ►► separators between steps (not after the last) */
+.pstep:not(:last-child) .pstep__num::after {
+  content: "\25B6\25B6";
+  position: absolute;
+  right: -0.26em; top: 46%;
+  transform: translateY(-50%);
+  font-size: 17px;
+  letter-spacing: -2px;
+  color: var(--volt-blue-bright);
+}
+.pstep__num {
+  position: relative;
+  font-family: var(--f-display);
+  font-weight: 400;
+  font-size: clamp(80px, 11vw, 150px);
+  line-height: 0.8;
+  color: var(--ink);
+  margin-bottom: 18px;
+  text-shadow: 0.055em 0.04em 0 var(--volt-blue);
+}
+.pstep__label {
+  display: inline-block;
+  background: transparent;
+  color: var(--ink);
+  border: 2px solid var(--volt-blue-bright);
+  font-family: var(--f-cond);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 13px;
+  padding: 6px 15px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+}
+.pstep__desc {
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: #36352f;
+  max-width: 230px;
+  margin: 0 auto;
+}
+@media (max-width: 820px) {
+  .proc__portrait { display: none; }
+  .proc__steps-wrap { padding-top: 8px; }
+  /* stacked "work order" tickets: numeral rail left, copy right, dashed
+     perforations between rows with the ►► separator riding the rail */
+  .proc__steps { grid-template-columns: 1fr; gap: 0; }
+  .pstep {
+    display: grid;
+    grid-template-columns: 92px 1fr;
+    column-gap: 20px;
+    text-align: left;
+    width: 100%;
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 30px 0;
+  }
+  .pstep:first-child { padding-top: 10px; }
+  .pstep:last-child { padding-bottom: 0; }
+  .pstep:not(:last-child) { border-bottom: 2px dashed rgba(47, 107, 255, 0.4); }
+  .pstep:not(:last-child) .pstep__num::after { content: none; }
+  /* ►► separator sits ON the perforation at the rail, rotated to point down;
+     paper background opens a gap in the dashes around it */
+  .pstep:not(:last-child)::after {
+    content: "\25B6\25B6";
+    position: absolute;
+    left: 46px;
+    bottom: 0;
+    transform: translate(-50%, 50%) rotate(90deg);
+    font-size: 15px;
+    letter-spacing: -2px;
+    line-height: 1;
+    padding: 3px 7px;
+    color: var(--volt-blue-bright);
+    background: var(--paper);
+  }
+  .pstep__num {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: center;
+    font-size: 96px;
+    margin-bottom: 8px;
+  }
+  .pstep__label { grid-column: 1; grid-row: 2; justify-self: center; align-self: start; margin-bottom: 0; }
+  .pstep__desc { grid-column: 2; grid-row: 1 / 3; align-self: center; max-width: none; margin: 0; }
+  .proc__squiggle, .proc__bolt { display: none; }
+}
+
+/* mono "patent document" caption (used by the offer card's Schedule A label) */
+.wl__patent {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: #6a6354;
+  margin-bottom: 14px;
+}
+
+/* ===== CASE STUDIES (§11-13, shared) ===== */
+.case-study { padding: calc(var(--torn-h, 42px) + 22px) 0 60px; }
+.cs__grid {
+  display: grid;
+  grid-template-columns: 0.82fr 1.18fr;
+  gap: 44px;
+  align-items: start;
+}
+.cs__media { display: flex; flex-direction: column; }
+.cs__ba-labels {
+  display: flex;
+  justify-content: space-around;
+  font-family: var(--f-head);
+  text-transform: uppercase;
+  font-size: var(--fs-h4);
+  margin-bottom: 8px;
+}
+.cs__media img {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+.cs__head {
+  font-family: var(--f-head);
+  font-weight: 400;   /* true Archivo Black — no synthetic bold (h2 UA default) */
+  text-transform: uppercase;
+  font-size: var(--fs-h3);
+  line-height: 1.04;
+  color: var(--ink);
+  margin-bottom: 14px;
+  /* even the wrap + stabilize it across 375/390 (case-a "…DIALED IN / 14 DAYS").
+     Shared base class: case-b's .cs__head--span has a hard <br> where balance
+     correctly no-ops, so this only affects the single-run case-a/case-c heads. */
+  text-wrap: balance;
+}
+.cs__head .hl {
+  background: var(--volt-blue-deep);
+  color: var(--ink);
+  padding: 0 8px;
+  border-radius: 3px;
+}
+/* second chip: cream text on black (mockup "REVENUE") */
+.cs__head .hl--dark {
+  background: var(--ink);
+  color: var(--paper);
+}
+.cs__head .blue { color: var(--volt-blue-deep); }
+/* all-blue headline variant (case-c) */
+.cs__head--blue { color: var(--volt-blue-deep); position: relative; }
+/* blue marker underline under the % figure */
+.cs__pct-ul {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 20' preserveAspectRatio='none'%3E%3Cpath d='M8 10 C90 4 200 6 292 9' fill='none' stroke='%232f6bff' stroke-width='8' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 50% 100%;
+  background-size: 96% 0.14em;
+  padding-bottom: 0.12em;
+  white-space: nowrap;
+}
+.cs__head-bolt { position: absolute; width: 20px; height: 30px; top: -26px; right: 20%; }
+.cs__head-spark { position: absolute; width: 26px; height: 26px; top: -24px; left: -8px; }
+.cs__head-scrib { display: inline-block; width: 40px; height: 28px; margin-left: 10px; vertical-align: baseline; }
+.cs__head { position: relative; }
+.cs__desc {
+  font-size: var(--fs-body);
+  line-height: 1.55;
+  color: #232321;
+  max-width: 560px;
+  margin-bottom: 28px;
+  text-wrap: pretty; /* no stranded one-word last line ("dollar.") on the phone wrap */
+}
+.cs__stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px 30px;
+  margin-bottom: 34px;
+  max-width: 520px;
+}
+.cstat { text-align: center; }
+.cstat__num {
+  font-family: var(--f-head);     /* wide display grotesque (mockup) */
+  font-weight: 400;
+  font-size: clamp(30px, 3.6vw, 46px);
+  line-height: 1;
+  color: var(--volt-blue-deep);
+}
+.cstat__cap {
+  font-family: var(--f-cond);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+  color: #3a3933;
+  margin-top: 6px;
+  text-wrap: balance; /* even the 2–3-line caption wraps so a single word doesn't strand alone on the last line (mobile 2×2 stat grid) */
+}
+.cs__impl-head {
+  font-family: var(--f-head);
+  text-transform: uppercase;
+  font-size: var(--fs-h4);
+  color: var(--ink);
+  margin-bottom: 16px;
+}
+.cs__impl {
+  list-style: none;
+  margin: 0; padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(4, auto);
+  gap: 11px 26px;
+}
+.cs__impl li { display: flex; align-items: start; gap: 10px; font-size: var(--fs-small); color: #232321; } /* start, not center: on mobile every item wraps to 2 lines, so pin the check to line 1 (no-op on 1-line desktop items). Shared across case-a/b/c. */
+/* blue circle check icons in implementation lists (mockup) */
+.cs__impl .chk { border-radius: 50%; }
+@media (max-width: 880px) {
+  .cs__grid { grid-template-columns: 1fr; gap: 30px; }
+  .cs__media { max-width: 420px; margin: 0 auto; }
+  /* Single column while the section is stacked: the 2-col checklist is a DESKTOP
+     treatment — on the full-width stacked body its columns are too narrow (≤~152px
+     @375) and every item wraps with a stranded last word (widow). 2-col returns
+     ≥881px where the body column is wide enough. */
+  .cs__impl { grid-template-columns: 1fr; grid-auto-flow: row; grid-template-rows: none; }
+  /* case heads: --fs-h3 floors at 26px here, undersizing them next to the sibling
+     section titles (.fn__title 30px, .rr__title ~28px, .dialed__title 34px @390).
+     Retrack with the viewport to the h2-tier 30px; balance holds each to a 2-line
+     wrap (copy is length-tuned for it: "DATED TO DIALED / IN 14 DAYS",
+     "GROWERS, BAKERS, / BARBERS, AND YOU?"). */
+  .case-study .cs__head { font-size: clamp(21px, 9.6vw - 7.4px, 30px); }
+  /* case-c head holds ONE line ("LOOK 10X YOUR SIZE"): its ink runs 12.06×
+     the font size, so the shared tier overflows the cream band's ~(100vw−60px)
+     body column below ~460px. 8vw−5px keeps ~4% slack through the whole range
+     (least at 320, where the 21px floor still leaves ~7px). */
+  .case-c .cs__head { font-size: clamp(21px, 8vw - 5px, 30px); }
+  /* case-b span head: the dark band's wider gutters (30px vs case-a's 24px) plus
+     its longest 2-line split ("BARBERS, AND YOU?", ~351px ink @30px) need ~8%
+     less than the shared tier to hold 2 lines at 320–416 — 27.6px @390 vs the
+     siblings' 30px, visually the same tier. */
+  .case-b .cs__head { font-size: clamp(21px, 8.5vw - 5.6px, 30px); }
+  /* case-b stat cells: those wider gutters leave ~143px half-width cells @375,
+     too narrow for the one-line captions at 12px — tighten the column gap to
+     match the ≤374 case-study treatment (18px) for ~3px+ of slack */
+  .case-b .cs__stats--row { column-gap: 18px; }
+  /* case-b head: the desktop-tuned <br> (after "BARBERS,") forces a 3-line wrap with
+     "BARBERS," orphaned on mobile. Drop it on phone so the single run flows and the
+     inherited .cs__head text-wrap:balance evens it; desktop keeps its <br> split. */
+  .cs__head--span br { display: none; }
+}
+/* Tier-2 pair 374/375. (The old .cs__head--span 21px step-down is gone: the
+   shortened head + the shared .case-study clamp above now handle its wrap.) */
+@media (max-width: 374px) {
+  /* hold the case-study stat captions to ONE line in the half-width cells (the
+     copy is tuned to fit a ~150px cell at 12px; cells shrink to ~121px @320) */
+  .case-study .cstat__cap { font-size: 10px; letter-spacing: 0.06em; }
+  .case-study .cs__stats { gap: 22px 18px; }
+  /* (fn__title's old Oswald-tuned 34px step-down removed: on the shared h2
+     token it floors at 30px, below the old override — the smaller floor
+     already prevents the orphaned staircase this rule fixed.) */
+}
+
+/* reversed layout (copy left, media right) */
+.cs__grid--rev { grid-template-columns: 1.18fr 0.82fr; }
+/* heading spans the full grid width so it holds 2 lines at this font size —
+   the 1.18fr body column is too narrow for Archivo Black to fit the longest line */
+.cs__head--span { grid-column: 1 / -1; margin-bottom: 4px; }
+/* stats in a 2x2 stacked grid, label ABOVE a huge cream number (case-b, mockup) */
+.cs__stats--row { grid-template-columns: repeat(2, auto); justify-content: start; gap: 28px 90px; max-width: none; }
+.cs__stats--row .cstat { text-align: left; }
+.cs__stats--row .cstat__num { font-size: clamp(34px, 4vw, 52px); margin-top: 0; }
+.cs__stats--row .cstat__cap { margin-top: 6px; max-width: none; white-space: nowrap; }
+.cs__impl--six { grid-template-rows: repeat(3, auto); }
+
+/* charcoal page-rip forming case-b's top edge — same treatment as the hero
+   rip over the trusted band: asset pre-baked to --dark so the tear merges
+   with the dark band, cast shadow rising over the cream case above; the
+   cream tear at case-b's bottom (torn-bottom torn--cream) closes the panel
+   just like the trusted section */
+.cs__rip {
+  position: absolute;
+  top: 4px;
+  left: -4px;
+  width: calc(100% + 8px);
+  max-width: none;  /* img{max-width:100%} would clamp the side bleed (same
+                       right-edge column exposure as .hero__rip) */
+  height: auto;
+  transform: translateY(-100%);
+  z-index: 3;
+  pointer-events: none;
+  user-select: none;
+  /* side bleed hides the scan's semi-transparent edge columns; the clip cuts
+     3px INSIDE the bottom edge — the downscaled image's antialiased bottom
+     row is semi-transparent and lets the drop-shadow bleed through as a dark
+     seam line, so the cut removes it (the 4px top overlap keeps the cut
+     buried inside the dark band) */
+  filter: drop-shadow(0 -2px 3px rgba(0,0,0,0.28)) drop-shadow(0 -6px 9px rgba(0,0,0,0.14));
+  clip-path: inset(-60px -20px 3px -20px);
+}
+/* clear the rip hanging over case-a's bottom (image is ~10.9vw tall) */
+.case-a { padding-bottom: max(80px, 12vw); }
+/* rip hangs above the seam, so no torn-h clearance needed at the top;
+   bottom pad keeps the impl list clear of the cream tear strip;
+   background-image: none drops the .dark-bg grid so the band is the same
+   flat --dark as the trusted/testimonials sections */
+.case-b { padding-top: 64px; padding-bottom: calc(var(--torn-h, 42px) + 130px); background-image: none; }
+/* case-b sits between the two blueprint bands, so its container misses the
+   .bp-band --pad-hero rule — match it so the content lines up with case-a/case-c */
+.case-b > .container { padding: 0 var(--pad-hero); }
+
+/* halftone pointing hand at case-b's bottom-right: fully visible in the dark
+   band under the before/after blueprint pair, cuff bleeding off the right
+   edge, and the cream tear at the section's bottom rips OVER its lower edge
+   (hand z 2 < torn-bottom::after z 3) */
+.cs__ok-hand {
+  position: absolute;
+  right: -10px;
+  bottom: calc(var(--torn-h, 42px) * 0.55); /* fingers clear the cream tear; lower edge dips behind it */
+  width: clamp(260px, 28vw, 410px);
+  z-index: 2;            /* below the cream tear — it rips over the hand's lower edge */
+  pointer-events: none;
+}
+/* hidden through the whole stacked range (case-b stacks ≤1100, see grid--rev) */
+@media (max-width: 1100px) { .cs__ok-hand { display: none; } }
+/* dark-band variant (case-b) */
+.case-study--dark .cs__head { color: var(--paper); }
+.case-study--dark .cs__desc { color: #c9c6bd; }
+.case-study--dark .cstat__num { color: var(--paper); }
+.case-study--dark .cstat__cap { color: #b4b1a8; }
+.case-study--dark .cs__impl-head { color: var(--paper); }
+.case-study--dark .cs__impl li { color: #d8d5cc; }
+/* dot bullets + blue BEFORE/AFTER labels on the dark case (mockup) */
+.case-study--dark .cs__impl .chk { width: 9px; height: 9px; background: var(--volt-blue-bright); }
+.case-study--dark .cs__impl .chk::after { content: none; }
+/* BEFORE/AFTER labels on the dark band: --volt-blue-bright (#2f6bff) is only 3.53:1 on
+   #232220 and the 18px Archivo Black labels are just under the WCAG large-text bold
+   threshold, so they need 4.5:1. No existing blue token clears it on dark (--volt-blue
+   = 4.36:1), so step to a lighter-but-still-saturated blue. Dark-scoped → case-b only. */
+.case-study--dark .cs__ba-labels { color: #6a98f0; } /* 5.57:1 on #232220 — passes AA */
+.case-study--dark .cs__media img { border-radius: 6px; }
+
+/* split before/after panels w/ distinct frames (case-c, mockup) */
+.cs__media--split { flex-direction: row; gap: 16px; align-items: stretch; }
+.cs__panel { flex: 1; display: flex; flex-direction: column; }
+.cs__ba-label {
+  font-family: var(--f-head);
+  text-transform: uppercase;
+  font-size: var(--fs-h4);
+  margin-bottom: 10px;
+  text-align: center;
+  color: var(--ink);
+}
+.cs__ba-label--after {
+  color: var(--volt-blue-bright);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 20' preserveAspectRatio='none'%3E%3Cpath d='M8 10 C90 4 200 6 292 9' fill='none' stroke='%239dc0f5' stroke-width='8' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 50% 100%;
+  background-size: 70% 0.14em;
+  position: relative;
+}
+.cs__label-bolt { width: 16px; height: 24px; margin-left: 8px; vertical-align: -3px; }
+.cs__shot { width: 100%; height: 100%; object-fit: cover; border-radius: 0 !important; }
+.cs__shot--before { border: 6px solid #1d1c1a; }
+.cs__shot--after { border: 6px solid var(--volt-blue); }
+/* Stack the REVERSED case-b grid below 1100px (not 880): its left column
+   carries the wide nowrap stat captions ("TRUST A REAL SITE OVER SOCIAL ALONE")
+   which inflate the column's min-content to ~650px, and from 881–1100 the grid's
+   fr auto-minimums steal the media column down to ~147px — the before/after pair
+   shrinks to a thumbnail and the BEFORE/AFTER labels jam into "BEFOREAFTER".
+   Stacking (like the ≤768 layout) restores a full-width centered media + wrapping
+   captions through the whole tablet range. case-a/case-c (non-rev) keep 880. */
+@media (max-width: 1100px) {
+  /* Stacked, the span heading becomes its own grid row, so the grid row-gap
+     (30px) + its 4px margin opened a ~34px head→body gap — more than double
+     the 14px the in-body heads (case-a/c) get from .cs__head margin-bottom.
+     Shrink the row-gap to that same 14px, zero the span head's margin, and
+     hand the media its share back so media→head stays on the shared 30px. */
+  .cs__grid--rev { grid-template-columns: 1fr; row-gap: 14px; }
+  .cs__grid--rev .cs__head--span { margin-bottom: 0; }
+  .cs__grid--rev .cs__media { margin-bottom: 16px; }
+  /* cap & centre the rev media when stacked (the generic .cs__media cap only
+     applies ≤880, so without this the pair would span the full container 881–1100).
+     order:-1 lifts the before/after pair above the heading + body so the stacked
+     dark band mirrors case-a's media-on-top layout (DOM keeps media last for the
+     desktop copy-left/media-right grid). */
+  .cs__grid--rev .cs__media { width: 100%; max-width: 420px; margin-inline: auto; order: -1; }
+  /* minmax(0,1fr): plain 1fr floors at min-content, and "INCLUDED" at the
+     34px floor (196px) blew the grid past the container — the 2nd column
+     ("SITE'S YOURS") ran off the viewport and was silently clipped by the
+     section's overflow:hidden. The fluid font floor keeps the longest
+     single word inside a half-width cell down to 375px */
+  .cs__stats--row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 30px; }
+  /* half-width cells: let condensed captions wrap instead of overflowing */
+  .cs__stats--row .cstat__cap { white-space: normal; }
+  .cs__stats--row .cstat__num { font-size: clamp(22px, 6.7vw, 52px); }
+  .cs__impl--six { grid-template-rows: none; }
+}
+
+/* ===== FUNNEL (§14) ===== */
+/* black band opened by a cream top rip (closes the case-c cream band):
+   headline, funnel diagram, stage labels, and claim all sit on the dark
+   background, which runs straight into the quote callouts and final CTA */
+/* bottom padding captures the diagram's escaping margin so the dark band runs
+   flush into the FAQ (without it, the body's cream shows through the gap) */
+.funnel { padding: calc(var(--torn-h, 42px) + 40px) 0 8px; }
+/* content edges track the case-c band above: same blueprint-border gutters
+   (--pad-hero scales with --border-w and collapses at ≤768 like the bands) */
+.funnel > .container { padding: 0 var(--pad-hero); }
+.fn__title {
+  font-family: var(--f-head);   /* was Oswald — the only section head off the Archivo Black system */
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: var(--fs-h2);
+  line-height: 1.04;
+  letter-spacing: -0.01em;
+  color: var(--paper);
+  text-align: center;
+}
+.fn__sub { font-size: var(--fs-lead); margin: 12px 0 0; color: var(--paper); text-align: center; }
+/* cream hand-drawn scribble under "foundation" (same stroke as .dd__ul) */
+.fn__sub-u { display: inline-block; position: relative; font-weight: 700; }
+.fn__sub-u::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0;
+  bottom: -0.22em;
+  height: 0.14em;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 20' preserveAspectRatio='none'%3E%3Cpath d='M8 10 C90 4 200 6 292 9' fill='none' stroke='%23f4ecdf' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+.fn__diagram {
+  display: grid;
+  /* spacer | labels. The funnel img is out of flow (see .fn__funnel), pinned
+     to the stage stack's bracket span and centered on the CONTAINER axis —
+     the FUNNEL ink, not the funnel+labels pair, reads as centered under the
+     centered title/sub. The spacer track pushes the labels right of the
+     centered funnel; --fn-lgap = distance from container center to the label
+     column's left edge (must clear the funnel's ink half-width ≈ 0.477x the
+     bracket span, plus breathing room). */
+  --fn-lgap: clamp(180px, 12.5vw, 230px);
+  position: relative;
+  grid-template-columns: calc(50% + var(--fn-lgap)) minmax(0, 440px);
+  justify-content: start;
+  align-items: center;
+  /* top margin reserves headroom for the bolt art that rises ~0.19x the
+     bracket span (~63px) above the ink-aligned funnel box, plus clear air
+     between the bolt tips and the sub text */
+  margin: 112px 0 44px;
+}
+.fn__funnel {
+  /* the BLUE FUNNEL INK is pinned to the stage stack's box: its rim tops out
+     at the FIRST LOOK bracket's top and its tip lands at the ACTION bracket's
+     bottom (brackets overhang each li by 9px). The image file has other art
+     around the funnel (bolts, sparks), so the box is oversized and offset by
+     measured ink fractions: the blue body spans source rows 206..1222 of
+     1284 and cols 242..1211 of 1340, so height = x1.26378 of the bracket
+     span, offset up by 0.20276 of it, and the ink's center sits 54.216% into
+     the image width — translateX centers that on the container's 50% axis.
+     Out of flow, so the stack alone sets the row height; width:auto resolves
+     from the image's aspect ratio. */
+  position: absolute;
+  top: calc(-9px - (100% + 18px) * 0.20276);
+  height: calc((100% + 18px) * 1.26378);
+  width: auto;
+  max-width: none;
+  left: 50%;
+  transform: translateX(-54.216%);
+}
+/* gap stretches the three stages to span more of the funnel's height so the
+   column reads as a peer to the big funnel, not a small caption beside it.
+   grid-column 2: the abs-pos funnel claims no cell, so without it the stack
+   would auto-place into the track-1 spacer */
+.fn__stages { list-style: none; margin: 0; padding: 0; display: grid; grid-column: 2; gap: 48px; text-align: left; max-width: 420px; }
+.fn__stages li { display: flex; flex-direction: column; gap: 7px; position: relative; padding-left: 46px; }
+/* hand-drawn-style blue "]" bracket hugging each stage (was baked into the
+   old combined illustration; the new funnel cutout doesn't include them) */
+.fn__stages li::before {
+  content: "";
+  position: absolute;
+  left: 0; top: -9px; bottom: -9px;
+  width: 20px;
+  border: 5px solid var(--volt-blue);
+  border-left: none;
+  border-radius: 0 14px 14px 0;
+}
+.fn__stage { font-family: var(--f-head); text-transform: uppercase; font-size: var(--fs-h4); color: var(--paper); }
+/* balance evens the two lines instead of dropping a single orphan word
+   ("seconds" / "becomes a customer") onto a lonely, gappy second line */
+.fn__stage-d { font-size: var(--fs-body); line-height: 1.5; color: #c9c6bd; text-wrap: balance; }
+.fn__check { color: var(--volt-blue); font-weight: 800; margin-right: 8px; } /* was --volt-blue-bright (3.53:1 on dark); match the sibling brackets' --volt-blue (4.36:1) — was the lone funnel accent left on the old token */
+.fn__claim {
+  font-family: var(--f-head);
+  text-transform: uppercase;
+  font-size: clamp(20px, 2.5vw, 32px);
+  line-height: 1.12;
+  color: var(--volt-blue); /* brighter on the charcoal band; -bright was ~3.4:1 */
+  text-align: center;
+  margin: 18px auto 0;
+  padding-bottom: 56px;
+}
+.fn__callouts-wrap { padding: 10px 0 56px; }
+.fn__callouts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 26px;
+  max-width: 880px;
+}
+.fn__co {
+  background: #1d1c1a;
+  border: 1px solid rgba(95,130,235,0.7);
+  border-radius: 16px;
+  padding: 22px 24px;
+  color: #fff;
+}
+/* mirrored stagger (mockup: left card high, right card lower) */
+.fn__co:first-child { transform: translateY(-8px); }
+.fn__co:last-child { transform: translateY(8px); }
+.fn__co-quote { font-size: 17.5px; line-height: 1.5; }
+.fn__co-action { margin-top: 12px; font-weight: 700; font-size: 14px; color: #cfe0ff; }
+.fn__arrow { color: var(--volt-blue-bright); font-weight: 700; margin-right: 4px; }
+/* narrow desktop: half the container can't hold the ink half-width plus a
+   440px label column, so compact the stack — a shorter bracket span shrinks
+   the pinned funnel with it, and both sides regain clearance */
+@media (min-width: 821px) and (max-width: 1080px) {
+  .fn__diagram { --fn-lgap: 190px; }
+  .fn__stages { gap: 28px; }
+  .fn__stage-d { font-size: 15px; }
+}
+@media (max-width: 820px) {
+  /* one row: a big funnel bleeding half off the LEFT viewport edge, stage
+     labels as the right column (funnel sized to roughly match the stack's
+     height). Track 1 is only the funnel's visible sliver inside the
+     container; the negative margin pulls the other half past the gutter
+     and off screen (max-width:none so the global img clamp can't cut it). */
+  .fn__diagram {
+    --fnw: 235px;
+    position: relative;
+    grid-template-columns: max(0px, calc(var(--fnw) / 2 - var(--pad-hero))) minmax(0, 1fr);
+    gap: 12px;
+    /* top margin reserves headroom for the bolt art that rises ~0.2x the
+       stack height above the ink-aligned funnel box, so it clears the
+       subtitle text */
+    margin: 62px 0 36px;
+  }
+  /* the BLUE FUNNEL INK is pinned to the stage stack's box: its rim tops out
+     at the FIRST LOOK bracket's top and its tip lands at the ACTION bracket's
+     bottom (brackets overhang each li by 6px). The image file has other art
+     around the funnel (bolt above the rim, sparks below the tip), so the box
+     is oversized and offset by measured ink fractions: with this shift the
+     visible blue spans source rows 206..1209 of 1284, giving height x1.28016
+     of the bracket span and a 0.20539 upward offset. Out of flow, so the
+     stack alone sets the row height; width:auto resolves from the image's
+     aspect ratio. --fnw is only the track-1 spacer estimate. */
+  .fn__funnel {
+    position: absolute;
+    top: calc(-6px - (100% + 12px) * 0.20539);
+    height: calc((100% + 12px) * 1.28016);
+    width: auto;
+    max-width: none;
+    left: calc(-1 * var(--pad-hero));
+    transform: translateX(-52%);
+  }
+  /* the abs-pos funnel no longer claims a grid cell, so pin the stack to the
+     text track or it auto-places into the track-1 spacer */
+  .fn__stages { grid-column: 2; gap: 22px; max-width: none; }
+  .fn__stages li { padding-left: 34px; }
+  .fn__stages li::before { width: 14px; border-width: 4px; top: -6px; bottom: -6px; }
+  /* small phones: the label column is narrow beside the half-bled funnel, so
+     step the descriptions down a size and pull the funnel in a touch so each
+     description holds to 2 lines down to 320px wide */
+  @media (max-width: 480px) {
+    /* text column geometry must hold descs to 2 lines down to 320px, so the
+       spacer stays viewport-proportional (text starts at --fnw/2 + gap). The
+       stack's 2-line descs make the ink-matched funnel wider here, so it
+       shifts to 55% off-screen (any further and the tip gets cut); the
+       cutoff at this shift trims the visible blue bottom to source row
+       ~1187, hence the slightly larger height factor. Below ~345px the rim's
+       right edge can still graze the bracket zone, but never the text. */
+    .fn__diagram { --fnw: min(70vw, 350px); margin-top: 76px; }
+    .fn__funnel {
+      transform: translateX(-57.5%);
+      top: calc(-6px - (100% + 12px) * 0.21495);
+      height: calc((100% + 12px) * 1.33333);
+    }
+    .fn__stage-d { font-size: 15px; }
+    .fn__stages li { padding-left: 26px; }
+    .fn__stages li::before { width: 12px; }
+  }
+  .fn__callouts { grid-template-columns: 1fr; max-width: 460px; }
+  /* title: the desktop-tuned <br> (after "TURNS") forces a ragged 4-line stack with
+     "TURNS" and "CUSTOMERS" orphaned on mobile. Drop it on phone so the single run
+     flows and balance evens it. (A space was added before the <br> in markup so the
+     words don't glue when it's hidden.) */
+  .fn__title br { display: none; }
+  .fn__title { text-wrap: balance; }
+}
+
+/* ===== FAQ (§13b) ===== */
+/* continues the funnel's dark band; the claim heads the section as a three-tier
+   stack (small claim -> big disarm -> promise), then a native <details>
+   accordion (no JS) */
+/* top padding (not a heading margin) so the dark bg covers it instead of the
+   margin escaping and letting the body's cream show through */
+.faq { padding: 22px 0 60px; }
+/* three typographic tiers instead of three equal <br> lines: the eyebrow sets
+   up the objection, the lead is the human disarm (dominant), the sub promises
+   the payoff the accordion below delivers */
+.faq__claim {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin: 0 auto;
+  padding-bottom: 0;
+}
+.faq__claim-eyebrow {
+  font-family: var(--f-head);
+  text-transform: uppercase;
+  font-size: clamp(12px, 1.25vw, 15px);
+  letter-spacing: 0.22em;
+  color: #6a98f0; /* was --volt-blue #4884ea = 4.36:1 on dark, fails AA at the 12px floor; #6a98f0 = 5.57:1 */
+  margin-bottom: 14px;
+}
+.faq__claim-lead {
+  font-family: var(--f-head);
+  text-transform: uppercase;
+  font-size: var(--fs-h2);
+  line-height: 0.98;
+  letter-spacing: -0.005em;
+  color: var(--paper);
+  text-wrap: balance; /* even the wrap so a single word doesn't strand on its own line */
+}
+.faq__claim-sub {
+  font-family: var(--f-head);
+  text-transform: uppercase;
+  font-size: var(--fs-h4);
+  line-height: 1.1;
+  letter-spacing: 0.03em;
+  color: #b9b6ad;
+  margin-top: 12px;
+  text-wrap: balance; /* @480 "…NO FINE PRINT." orphaned "PRINT." on its own line; balance evens the 2-line wrap */
+}
+.faq__list {
+  max-width: 760px;
+  margin: 34px auto 0;
+  display: grid;
+  gap: 14px;
+}
+/* card matches the funnel callouts (.fn__co): warm near-black + blue hairline */
+.faq__item {
+  background: #1d1c1a;
+  border: 1px solid rgba(95,130,235,0.55);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.faq__item[open] { border-color: rgba(95,130,235,0.95); }
+.faq__q {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 19px 22px;
+  font-family: var(--f-head);
+  text-transform: uppercase;
+  font-size: clamp(15px, 1.7vw, 19px);
+  line-height: 1.22;
+  letter-spacing: 0.01em;
+  color: var(--paper);
+}
+.faq__q::-webkit-details-marker { display: none; }   /* hide native disclosure triangle */
+/* keyboard focus ring: the global a/button/input rule (styles.css:61) excludes <summary>,
+   so add it here. Inset offset keeps the ring inside the card's overflow:hidden clip. */
+.faq__q:focus-visible { outline: 3px solid var(--volt-blue-bright); outline-offset: -3px; }
+/* touch press feedback (rows had none — only the +/− icon changed on open) */
+.faq__q:active { background: #232120; }
+/* blue +/− toggle: vertical bar fades out when the item is open */
+.faq__sign { flex: none; position: relative; width: 26px; height: 26px; }
+.faq__sign::before,
+.faq__sign::after {
+  content: "";
+  position: absolute;
+  background: var(--volt-blue-bright);
+  border-radius: 2px;
+}
+.faq__sign::before { left: 4px; right: 4px; top: 11.5px; height: 3px; }
+.faq__sign::after  { top: 4px; bottom: 4px; left: 11.5px; width: 3px; transition: opacity .15s ease; }
+.faq__item[open] .faq__sign::after { opacity: 0; }
+.faq__a {
+  padding: 0 22px 21px;
+  font-family: var(--f-body);
+  font-size: var(--fs-body);
+  line-height: 1.55;
+  color: #c9c6bd;
+}
+.faq__a strong { color: var(--paper); font-weight: 700; }
+@media (max-width: 600px) {
+  .faq__q { padding: 16px; gap: 14px; }
+  .faq__a { padding: 0 16px 18px; }
+}
+/* below 360px the longest question ink (~231px @15px) outgrows the text box;
+   step the type down so every question stays on one line to 320px */
+@media (max-width: 359px) {
+  .faq__q { font-size: 13px; padding: 15px 14px; gap: 10px; }
+}
+
+/* ===== DATA-DRIVEN (§10) ===== */
+.data-driven {
+  /* both edges clear the cream tear strips (torn-top + torn-bottom) */
+  padding: calc(var(--torn-h, 42px) + 14px) 0 calc(var(--torn-h, 42px) + 14px);
+  text-align: center;
+  overflow: hidden;
+  position: relative;
+  /* band color comes from .dark-bg (same off-black as the other dark sections) */
+}
+.dd__title {
+  font-family: var(--f-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  color: var(--paper);
+  font-size: clamp(60px, 12.2vw, 162px);
+  line-height: 1.0; /* 0.88 fused the two stacked lines (IMAGINE / YOUR SITE) — 0-gap line boxes so glyph ink touched; 1.0 restores the clear inter-line gap the reference shows */
+  letter-spacing: 0.01em;
+  text-shadow: 0.028em 0.03em 0 rgba(16,18,24,0.5);  /* subtle dark offset (mockup) */
+}
+/* IMAGINE + its flanking sparks need ~5.6× the font-size in width, so the
+   60px clamp floor clips the sparks below ~340px viewports; track the
+   viewport there instead of flooring at 60 (16vw ≥ 60px above 375) */
+@media (max-width: 480px) {
+  .dd__title { font-size: clamp(40px, 16vw, 60px); }
+}
+/* cream hand-drawn underline scribble beneath YOUR SITE (kept clear of the
+   letters' dark offset shadow) */
+.dd__ul { display: inline-block; position: relative; }
+.dd__ul::after {
+  content: "";
+  position: absolute;
+  left: 2%; right: 2%;
+  bottom: -0.16em;
+  height: 0.1em;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 20' preserveAspectRatio='none'%3E%3Cpath d='M8 10 C90 4 200 6 292 9' fill='none' stroke='%23f4ecdf' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+/* the receipt sinks below the band edge (see .offer__receipt); this span
+   re-paints the dark band over it below the tear contour — same geometry as
+   the torn-top strip but masked with the INVERSE alpha of the same scan, so
+   the black covers the slip exactly where the cream strip doesn't. Sits
+   above the receipt (z 4) which sits above the cream strip (z 3). */
+.dd__tear-cut {
+  position: absolute;
+  top: -1px;
+  left: 0; right: 0;
+  height: var(--torn-h);
+  z-index: 5;
+  pointer-events: none;
+  /* match .dark-bg (color + faint grid) so the repaint is seamless;
+     the 1px offset compensates for the span's top: -1px */
+  background-color: var(--dark);
+  background-image:
+    linear-gradient(rgba(255,255,255,0.01) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.01) 1px, transparent 1px);
+  background-size: 28px 28px, 28px 28px;
+  background-position: 0 1px;
+  -webkit-mask-image: url("assets/torn-cream-paper-inverted.png");
+  mask-image: url("assets/torn-cream-paper-inverted.png");
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+/* blueprint border columns continue over the cream tear strip (which paints
+   below the bp-band's bottom edge) and get ripped along its contour: same
+   geometry as .torn-top::before, tile phase continues from the band boundary
+   (band columns are bottom-anchored, so the boundary is a tile seam), and the
+   tear scan's own alpha is the mask. .fn__rip-borders: same treatment where
+   the funnel's cream top rip closes the case-c band */
+.dd__rip-borders,
+.fn__rip-borders {
+  position: absolute;
+  top: -1px;
+  left: 0; right: 0;
+  height: var(--torn-h);
+  z-index: 4;                          /* above the torn strip (z 3) */
+  pointer-events: none;
+}
+/* per-side pseudos clipped to --border-w, same rationale as
+   .bp-band__rip-borders: the carry-up must match the column width it
+   continues, and each side masks against its local slice of the
+   viewport-wide tear contour */
+.dd__rip-borders::before,
+.fn__rip-borders::before,
+.dd__rip-borders::after,
+.fn__rip-borders::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0;
+  width: var(--border-w);
+  background-repeat: repeat-y;
+  background-size: auto var(--tile-h);
+  -webkit-mask-image: url("assets/torn-cream-paper.png");
+  mask-image: url("assets/torn-cream-paper.png");
+  -webkit-mask-size: 100vw 100%;
+  mask-size: 100vw 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+.dd__rip-borders::before,
+.fn__rip-borders::before {
+  left: 0;
+  background-image: url("assets/blueprint-border-left.webp");
+  background-position: left top;
+  -webkit-mask-position: left top;
+  mask-position: left top;
+}
+.dd__rip-borders::after,
+.fn__rip-borders::after {
+  right: 0;
+  background-image: url("assets/blueprint-border-right.webp");
+  background-position: right top;
+  -webkit-mask-position: right top;
+  mask-position: right top;
+}
+/* light-blue spark scribbles flanking the headline — anchored to the title
+   LINES (inline-block spans) and sized/offset in em so they track the glyphs
+   at every width; the old %-of-section offsets converged onto the text as the
+   viewport narrowed (sparks sat ON "14 DAYS" at phone widths) */
+/* line 1 ("BEFORE") is naturally narrower than line 2 ("& AFTER"); track it
+   out to match so the two lines stack into a solid rectangle (the negative
+   margin cancels the trailing letter-space so the glyphs stay centered) */
+.dd__line { display: inline-block; position: relative; letter-spacing: 0.055em; margin-right: -0.055em; }
+.dd__spark { position: absolute; width: 0.28em; height: 0.28em; pointer-events: none; }
+.dd__spark--tl { left: -1.1em; top: -0.12em; }
+.dd__spark--tr { right: -1.0em; top: -0.05em; transform: rotate(40deg); }
+.dd__spark--bl { left: -1.0em; bottom: 0.1em; transform: rotate(-30deg); }
+.dd__spark--br { right: -1.0em; bottom: 0; transform: rotate(15deg); }
+
+/* ===== FINAL CTA (§15) ===== */
+/* black section (continuous with the funnel callouts band and footer);
+   the cream torn ribbon floats on it (torn--cream-dark strips paint the
+   black-underneath rips inside the ribbon's top/bottom edges) */
+/* clip the collage hands' off-viewport bleed horizontally (they run ±42px past
+   the edges and were extending body scrollWidth to 553 → a sliver of horizontal
+   pan/left-edge bleed in some browsers). overflow-y stays visible so the fists
+   still hang below the ribbon onto the black band. */
+.final-cta { padding: 48px 0 40px; overflow-x: clip; }
+.fcta__ribbon {
+  /* content clears the rip strips (cream paper bg matching the cream bands);
+     asymmetric: the top scan's black rips bite deep into the cream while the
+     bottom scan's cream runs long, so equal padding reads as text-too-high —
+     trim the bottom to optically center the title + pill in the visible band */
+  padding: calc(var(--torn-h, 42px) - 2px) 0 calc(var(--torn-h, 42px) - 14px);
+  background-color: var(--paper);
+  color: var(--ink);
+}
+.fcta__inner {
+  display: grid;
+  align-items: center;
+}
+/* big collage hands pinned to the viewport edges (ribbon is full-bleed):
+   wrists run off-page (negative translateX crops the cutout outline) and the
+   fists hang below the ribbon onto the black, per the reference comp */
+.fcta__hand {
+  position: absolute;
+  width: clamp(240px, 24vw, 360px);
+  height: auto;
+  z-index: 5;                /* above the torn strips (z 3) + rip borders (z 4) */
+  pointer-events: none;
+}
+.fcta__hand--l { left: 0; bottom: -26%; transform: translateX(-15%); }
+.fcta__hand--r { right: 0; bottom: -30%; transform: translateX(15%); }
+.fcta__center {
+  text-align: center;
+  padding: 0 clamp(160px, 17vw, 250px);
+  /* the optical-centering trim on the ribbon's bottom padding lets the pill
+     dip into the bottom torn strip (z 3), whose flat-cream top would paint
+     over the pill's lower edge — lift the content above the strips */
+  position: relative;
+  z-index: 4;
+}
+.fcta__title {
+  font-family: var(--f-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  color: var(--ink);
+  font-size: clamp(28px, 4.4vw, 58px);
+  line-height: 0.92;
+  margin-bottom: 12px;
+  text-wrap: balance; /* @320 it wrapped "READY TO PULL THE / PLUG?" (lone "PLUG?"); balance evens to two lines */
+}
+.fcta__sub {
+  font-family: var(--f-body);
+  font-weight: 600;
+  font-size: var(--fs-lead);
+  line-height: 1.35;
+  color: var(--ink);
+  margin-bottom: 20px;
+  /* absorb the lone "July." last-line orphan at 390 without rebalancing the whole
+     multi-sentence run (pretty, not balance — this is long body copy). */
+  text-wrap: pretty;
+}
+/* below ~900 the ribbon is too short for full-size hands — they ride up
+   beside the recap line (240px clamp floor vs 160px center padding at 768).
+   Tuck small hands into the lower corners across the whole narrow range */
+@media (max-width: 900px) {
+  .fcta__hand { width: 140px; }
+  .fcta__hand--l { bottom: -12%; transform: translateX(-30%); }
+  .fcta__hand--r { bottom: -15%; transform: translateX(30%); }
+}
+@media (max-width: 760px) {
+  /* title spans the full ribbon; hands tuck into the lower corners below it */
+  .fcta__ribbon { padding: calc(var(--torn-h, 42px) + 8px) 0 calc(var(--torn-h, 42px) + 56px); }
+  .fcta__center { padding: 0 12px; }
+  .fcta__title { font-size: 30px; }
+}
+
+/* ===== FOOTER (§16) ===== */
+.footer { padding: 40px 0 46px; color: var(--paper); }
+.footer__inner {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 30px;
+}
+.footer .wordmark__name { font-size: 19px; }
+.footer .wordmark__sub { font-size: 19px; letter-spacing: 0.02em; padding-left: 0; }
+.footer__capture { justify-self: center; text-align: center; }
+.footer__cap-label {
+  display: block;
+  font-family: var(--f-cond);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 12px;
+  color: #cfccc3;
+  margin-bottom: 10px;
+}
+.footer__form { display: flex; }
+/* white pill input with the blue SUBMIT pill inset at its right end (one control) */
+.footer__control {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 999px;
+  padding: 4px 4px 4px 18px;
+}
+.footer__input {
+  background: transparent;
+  border: none;
+  padding: 8px 10px 8px 0;
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 14px;
+  min-width: 210px;
+  outline: none; /* ring drawn on .footer__control instead (input sits inside the white pill) */
+}
+.footer__control:focus-within {
+  outline: 3px solid var(--volt-blue-bright);
+  outline-offset: 2px;
+}
+.footer__input::placeholder { color: #6f6c64; }
+.footer__submit { border-width: 0; color: var(--cta-ink); background: var(--cta-bg); }
+.footer__links { display: flex; align-items: center; gap: 14px; justify-self: end; }
+.footer__links a {
+  font-size: 12px;
+  color: #cfccc3;
+  letter-spacing: 0.02em;
+  text-decoration: underline;
+  padding: 10px 4px; /* lift tap target to ~32px tall (WCAG 2.2 ≥24px) */
+}
+.footer__links a:hover { color: #fff; }
+.footer__social {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px;
+  background: #f1e9dc;
+  color: #161514;
+  font-weight: 700;
+  border-radius: 5px;
+  font-family: var(--f-head);
+  font-size: 12px;
+  text-transform: lowercase;
+  text-decoration: none !important;
+}
+@media (max-width: 820px) {
+  .footer__inner { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 20px; }
+  .footer__form { flex-wrap: wrap; justify-content: center; }
+  .footer__links { justify-self: center; }
+  /* the email control (input min-width:210 + SEND IT + padding ≈ 302px) overran the
+     276px content box at 320 → the section's 4px horizontal document overflow. Bind
+     the capture/control to the column and let the input flex-shrink to fit. */
+  .footer__capture { width: 100%; max-width: 360px; }
+  /* min-height + stretch so the input AND the SEND IT button are ≥44px tap targets
+     (were 41px / 30px) — matches the site's ≥44px CTA standard. */
+  .footer__control { width: 100%; box-sizing: border-box; min-height: 52px; align-items: stretch; }
+  .footer__input { min-width: 0; flex: 1; }
+}
+
+/* ---------- RESPONSIVE (refined after desktop fidelity) ---------- */
+/* Scale the blueprint side border down as the viewport narrows so it never
+   crowds the content column (--pad tracks --border-w automatically). */
+@media (max-width: 1200px) { :root { --border-w: 110px; --tile-h: 440px; } }
+@media (max-width: 1000px) { :root { --border-w: 74px;  --tile-h: 300px; } }
+@media (max-width: 768px) {
+  /* Keep the blueprint side borders on phones, but as thin torn SLIVERS: a
+     full ~74px column would swallow the screen, so we drop --border-w to a
+     narrow accent that frames the cream page with the torn blue edge (the
+     tile stays height-scaled, so each sliver shows the artwork's outer torn
+     rim, not a squashed whole). --pad-hero keeps hero/band copy clear of it. */
+  /* --pad-hero 30px gives hero/band copy the SAME gutter both sides (the old
+     34/26 split read lopsided); total content width is unchanged (60px). */
+  :root { --pad: 22px; --border-w: 16px; --pad-hero: 30px; }
+  /* Keep the over-the-tear carry-ups on phones too: without them the side
+     slivers stop a tear-strip's height (~44px) short of each rip, leaving a
+     bare cream gap between the dark band and the blueprint columns instead
+     of the columns reading as ripped off with the page. */
+}
+@media (max-width: 880px) {
+  /* long JS-set pill label + nav link collide with the wordmark below ~880:
+     let the bar wrap to two rows instead of jamming together */
+  .topbar__inner { flex-wrap: wrap; gap: 6px 18px; padding-bottom: 12px; }
+  .topbar__nav { gap: 16px; margin-left: auto; }
+  .topbar__link { font-size: 12px; white-space: nowrap; }
+  .topbar__nav .pill { font-size: 12px; padding: 8px 16px; }
+}
+/* Mobile compaction. Gated at ≤768 (NOT ≤480) — this is the breakpoint where
+   the blueprint side borders and the wide gutters collapse, so the topbar +
+   urgency bar must compact here too (gating at ≤480 once left the 481–768
+   band in a half-desktop state). */
+@media (max-width: 768px) {
+  .topbar__nav { gap: 12px; margin-left: auto; margin-top: 0; }
+  .topbar__link { font-size: 12px; }
+  /* keep the desktop's stacked two-line wordmark, scaled to logo size: a
+     small tight block reads as a mark, where an inline SITEVOLT MARKETING
+     line shouted across half the bar and crowded the nav link */
+  .wordmark__name, .wordmark__sub { font-size: 15px; }
+  .wordmark__sub { padding-left: 0; }
+  /* one calm row: logo block left, nav pinned right, vertically centred.
+     The stacked mark is ~100px wide, so both fit even at 320px — no wrap. */
+  .topbar__inner { align-items: center; padding: 10px var(--pad); }
+  .urgency__inner { gap: 5px 10px; padding: 8px 12px; }
+  .urgency__label { font-size: 11px; letter-spacing: 0.08em; }
+  .urgency__clock { gap: 5px; }
+  .urgency__unit { padding: 2px 5px; }
+  .urgency__unit b { font-size: 13px; min-width: 1.5ch; }
+}
+/* phones: drop the seconds cell — the label + D/H/M clock then fits its row
+   without cramming, and the fold loses a per-second flicker right above the
+   headline. Days/hours/minutes still tick, so the deadline stays visibly live. */
+@media (max-width: 480px) {
+  .urgency__clock .urgency__unit:last-child { display: none; }
+}
+
+/* ===== HORMOZI REBUILD (hero offer headline, spot meter, receipts band,
+   value-stack offer, guarantee stack, founders card, final-cta recap) ===== */
+
+/* hero: offer headline runs longer than the old 3-word lines — size down a notch.
+   Cap at the 4.3vw value for 1920 (was 62px = the 1440 value): the copy and the
+   right-anchored art both hug the viewport-anchored border columns, so freezing
+   the type at the 1440 scale opened a cream void between them on wide screens */
+.hero__title--offer { font-size: var(--fs-h1); }
+/* the meter + why lines add height — keep them clear of the bottom page rip.
+   The rip's rendered height is 10.88vw (2758x300 asset at width:100%), so the
+   clearance must scale with it: 10.88vw + 96px = 235px at the 1280 build
+   width, and keeps the same text-to-rip gap at 1920/2560 instead of letting
+   the taller rip swallow the hero__why line */
+.hero:has(.hero__why) { padding-bottom: calc(10.88vw + 96px); }
+/* at phone width the art now sits BELOW the copy, tucked into the bottom rip:
+   trim the bottom padding so Tesla's lower edge meets the tear (like desktop)
+   instead of leaving a cream gap above it */
+@media (max-width: 640px) { .hero:has(.hero__why) { padding-bottom: 36px; } }
+/* Phone: the 52px desktop top padding leaves a big cream gap under the nav —
+   tighten it so the headline sits closer to the bar. */
+@media (max-width: 640px) { .hero { padding-top: 24px; } }
+/* Phone rhythm: pull the sub in tighter under the headline, and give the CTA
+   pill's underline scribble (extends 26px below the pill) real breathing room
+   before the spot-meter line so the two don't read as one tangled cluster. */
+@media (max-width: 640px) {
+  .hero__sub { margin: 18px 0 18px; }
+  /* bullets → CTA was the rhythm outlier (34px vs the 18px text gaps above);
+     24px keeps the CTA reading as its own zone without the dead-air band */
+  .hero__bullets { margin-bottom: 24px; }
+  .hero__cta { margin-bottom: 38px; }
+}
+
+/* hero spot meter (replaces the static trust line) */
+/* Block flow (not flex) at every width: a flex container with gap turned the
+   bare "." text node into its own item, floating the period 10px off "left".
+   The spot-meter stays an inline-flex cluster, vertically centred against the
+   text — so the boxes still line up without the dangling-period artifact. */
+.hero__trust--meter { display: block; max-width: clamp(470px, 32.6vw, 630px); }
+.hero__why { max-width: clamp(470px, 32.6vw, 630px); }
+.spot-meter { display: inline-flex; gap: 5px; vertical-align: middle; margin-right: 8px; }
+/* phone: the flex container + gap:10px turned the bare "." text node and the trailing
+   "Miss out…" span into their own flex items — the period floated 10px off the phrase and
+   the sentence was forced onto its own line. Let the line flow as normal inline text at
+   mobile (dots stay an inline-flex cluster, vertically centered). Placed AFTER the global
+   flex rule above so source order wins — media queries add no specificity. */
+@media (max-width: 768px) {
+  .hero__trust--meter { display: block; }
+  .hero__trust--meter .spot-meter { vertical-align: middle; margin-right: 8px; }
+}
+.spot {
+  width: 15px; height: 15px;
+  border: 2.5px solid var(--ink);
+  border-radius: 3px;
+  background: transparent;
+}
+.spot--used { background: var(--volt-blue-bright); border-color: var(--ink); }
+.hero__why {
+  margin-top: 8px;
+  font-family: var(--f-scribble);
+  font-size: 15px;
+  color: #3a3933;
+}
+/* Phone tiers: once the sub drops to 14px (≤540 rule above), the 16px-bold
+   meter line out-sized the lead paragraph it supports — inverted hierarchy.
+   Join it to the 14px supporting tier (bold keeps its urgency) and scale the
+   spot boxes down with the text. Placed after the base .spot/.hero__trust
+   rules — equal specificity, so source order must win here. .hero__why stays
+   15px: Kalam's small x-height already reads a tier below Inter 14. */
+@media (max-width: 540px) {
+  .hero__trust--meter { font-size: 14px; }
+  .spot { width: 13px; height: 13px; border-width: 2px; }
+}
+
+/* dialed-in: second paragraph (the turn) — supporting detail, lighter than the hook */
+.dialed__body--turn {
+  margin-top: 18px;
+  font-size: var(--fs-body);
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: 0;
+  color: #c8c0b1;
+  text-wrap: balance;
+}
+.dialed__body--turn s { color: #8c867a; text-decoration-thickness: 1.5px; }
+.dialed__body--turn strong {
+  display: inline-block;
+  margin-top: 2px;
+  color: #fff;
+  font-weight: 700;
+}
+
+/* founders card (replaces testimonial cards) */
+.tcard--founders {
+  aspect-ratio: auto;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 44px 56px 36px;
+}
+.founders__title {
+  font-family: var(--f-head);
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: clamp(28px, 3.4vw, 44px);
+  color: #fff;
+  margin-bottom: 18px;
+}
+.founders__body { flex: 0 0 auto; font-size: 17px; }
+.founders__body + .founders__body { margin-top: 14px; }
+.tcard--founders .tcard__stars { color: var(--volt-blue-bright); font-size: 28px; margin-bottom: 14px; }
+.tcard--founders .tcard__brand { margin-top: 26px; letter-spacing: 0.1em; font-size: 15px; }
+
+/* ===== THE OFFER (value stack) ===== */
+.offer { padding: 26px 0 0; } /* no bottom gap: the receipt sinks into the data-driven tear */
+/* lift the column above the data-driven tear strip (z 3): .section > .container
+   is z 1, which traps the sunken receipt's z-index under the strip's cream.
+   .dd__tear-cut (z 5) still paints the black rip back over the slip. */
+.offer > .container { z-index: 4; }
+.offer__title {
+  text-align: center;
+  font-family: var(--f-head);
+  font-weight: 400;   /* true Archivo Black — no synthetic bold (h2 UA default) */
+  text-transform: uppercase;
+  /* The forced two-line break makes "ON DUMBER THINGS" the longest line
+     (~338px at 30px vs 281px for "DUMBER THINGS" alone), so the old 28px
+     floor stranded "ON" on its own line below ~430px. The inner ramp
+     `8.8vw - 5.4px` tracks that line's width against the column (font ≈
+     30px × column/338px) so it stays one line down to 320, where the
+     floor bottoms out at 22px. Slope and 50px cap unchanged for wide. */
+  font-size: clamp(22px, max(3.9vw, min(30px, 8.8vw - 5.4px)), 50px);
+  line-height: 1.04;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin-bottom: 16px;
+  text-wrap: balance; /* even the 3-line wrap (middle "DOLLAR ON" was stranded); single run, no <br> */
+}
+.offer__sub {
+  text-align: center;
+  font-size: var(--fs-lead);
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 30px;
+  text-wrap: balance; /* pull up the lone "Here's the receipt:" last line */
+}
+/* ===== value stack styled as a printed register receipt ===== */
+/* wrapper carries a drop-shadow that follows the torn (masked) edge */
+.offer__receipt {
+  max-width: 880px;
+  margin: 0 auto;
+  filter: drop-shadow(0 14px 26px rgba(44,36,16,0.20));
+  /* torn off with the page: the slip sinks past the band edge so the
+     data-driven tear rips it mid-barcode. It paints above the cream tear
+     strip (z 3) and .dd__tear-cut (z 5) lays the black back over it along
+     the same contour. --sink is tuned so the contour's center (~60% down
+     the strip) crosses the middle of the barcode. */
+  --th: clamp(44px, 6.21vw, 98px);          /* mirrors .torn--cream --torn-h */
+  --sink: calc(0.6 * var(--th) + 88px);     /* receipt bottom below the band edge */
+  --tail: calc(var(--sink) - var(--th) + 3px);
+  position: relative;
+  z-index: 4;
+  margin-bottom: calc(-1 * var(--sink));
+  /* drop the tail that would poke out below the strip; negative side/top
+     insets keep the drop-shadow (clip-path clips at border-box otherwise) */
+  clip-path: inset(-80px -80px var(--tail) -80px);
+}
+.offer__card {
+  --tooth: 11px;   /* width of one zigzag tooth */
+  --peak: 9px;     /* height of the torn edge */
+  background:
+    /* foxing — small age spots scattered across the slip */
+    radial-gradient(6px 5px at 18% 22%, rgba(150,120,70,0.13), transparent 70%),
+    radial-gradient(5px 4px at 73% 14%, rgba(150,120,70,0.11), transparent 70%),
+    radial-gradient(7px 6px at 88% 47%, rgba(140,110,60,0.12), transparent 70%),
+    radial-gradient(4px 4px at 32% 63%, rgba(150,120,70,0.10), transparent 70%),
+    radial-gradient(6px 5px at 60% 81%, rgba(140,105,55,0.12), transparent 70%),
+    radial-gradient(5px 5px at 12% 88%, rgba(150,120,70,0.10), transparent 70%),
+    /* large soft coffee/water stains */
+    radial-gradient(60% 38% at 82% 8%, rgba(150,116,62,0.10), transparent 60%),
+    radial-gradient(48% 34% at 8% 70%, rgba(140,108,58,0.09), transparent 62%),
+    radial-gradient(70% 30% at 50% 104%, rgba(120,92,48,0.12), transparent 60%),
+    /* faint dot-matrix print lines */
+    repeating-linear-gradient(rgba(120,108,80,0.05) 0 1px, transparent 1px 4px),
+    /* mottled discoloration across the sheet */
+    radial-gradient(40% 50% at 25% 35%, rgba(196,176,128,0.16), transparent 70%),
+    radial-gradient(45% 55% at 78% 65%, rgba(180,158,110,0.18), transparent 72%),
+    /* aged warmth + edge vignette: clean center, dirty/darkened corners */
+    radial-gradient(135% 110% at 50% 42%, #fbf6ea 0%, #f3ecda 50%, #e9dcc2 84%, #ddcca8 100%);
+  background-color: #f1e8d4;
+  color: #2c2820;
+  padding: calc(var(--peak) + 30px) clamp(20px, 5vw, 46px) calc(var(--peak) + 26px);
+  margin: 0;
+  position: relative;
+  font-family: var(--f-mono);
+  /* torn-off-a-roll: zigzag the top and bottom, leave the sides flat */
+  -webkit-mask:
+    conic-gradient(from -45deg at top, #0000 25%, #000 0) 0 0 / calc(2 * var(--tooth)) var(--peak) repeat-x,
+    conic-gradient(from 135deg at bottom, #0000 25%, #000 0) 0 100% / calc(2 * var(--tooth)) var(--peak) repeat-x,
+    linear-gradient(#000 0 0) 0 50% / 100% calc(100% - 2 * var(--peak)) no-repeat;
+          mask:
+    conic-gradient(from -45deg at top, #0000 25%, #000 0) 0 0 / calc(2 * var(--tooth)) var(--peak) repeat-x,
+    conic-gradient(from 135deg at bottom, #0000 25%, #000 0) 0 100% / calc(2 * var(--tooth)) var(--peak) repeat-x,
+    linear-gradient(#000 0 0) 0 50% / 100% calc(100% - 2 * var(--peak)) no-repeat;
+}
+
+/* printed header block */
+.rcpt__head { text-align: center; margin-bottom: 20px; }
+.rcpt__store {
+  font-family: var(--f-display);
+  font-size: 40px;
+  line-height: 1;
+  letter-spacing: 0.05em;
+  color: var(--ink);
+  margin: 0 0 7px;
+}
+.rcpt__tag {
+  font-family: var(--f-mono);
+  /* Below 760px the tag stacks as two centered lines ("Big-brand website" /
+     "built by hand") and each must stay unbroken. "Big-brand website" needs
+     ~12.9px of ink per font-px (mono + 0.16em tracking) while the card's inner
+     box is ~(100vw - 100px) on phones, so the size must stay under roughly
+     7.7vw - 7.7px. The old `11vw - 19px` ramp hit the 22px cap by ~373px and
+     re-broke the first line into two at 360–389px; `7.6vw - 8px` keeps ~2px of
+     slack across 320–430 and reaches the 22px cap by ~395px. */
+  font-size: clamp(16px, 7.6vw - 8px, 22px);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #6a6354;
+  margin: 0;
+}
+.rcpt__rule { border: 0; border-top: 2px dashed #bdb49d; margin: 13px 0; height: 0; }
+.rcpt__caption {
+  font-family: var(--f-mono);
+  /* single line, always: shrink below ~430px so the nowrap text never overflows the slip
+     (9px at 320 → 12.5px cap by ~430; ink width ≈ 24× font-size incl. letter-spacing) */
+  font-size: clamp(9px, 3.2vw - 1.24px, 12.5px);
+  letter-spacing: 0.05em;
+  color: #6a6354; /* was #8a8270 (3.13:1) — darkened to receipt brown for WCAG AA (4.89:1) */
+  margin: 0;
+  white-space: nowrap;
+}
+.offer__menu { list-style: none; margin: 0 0 16px; padding: 0; display: grid; gap: 14px; }
+.offer__menu li { display: flex; flex-direction: column; gap: 2px; font-family: var(--f-mono); font-size: 14px; color: #2c2820; }
+.offer__row { display: flex; align-items: baseline; gap: 8px; }
+.offer__item { font-family: var(--f-mono); font-weight: 700; letter-spacing: 0.01em; }
+.offer__item em { font-style: italic; }
+.offer__desc { font-family: var(--f-mono); font-size: 14px; line-height: 1.5; color: #6a6354; max-width: 100%; } /* mobile readability: meets the 14px body floor (matches .pstep__desc); color #6a6354 = 4.89:1 AA on receipt cream. The 12px receipt CHROME (.rcpt__caption/.offer__fine) stays small by design. */
+.offer__dots { flex: 1; border-bottom: 2px dotted #b2a98f; transform: translateY(-4px); min-width: 24px; }
+.offer__price {
+  font-family: var(--f-mono);
+  font-weight: 700;
+  font-size: 15px;
+  white-space: nowrap;
+}
+.offer__free {
+  display: inline-block;
+  background: var(--volt-blue-deep);
+  color: #fff;
+  font-family: var(--f-cond);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 10.5px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  margin-right: 8px;
+  vertical-align: 1px;
+}
+.offer__total {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 10px;
+  font-family: var(--f-mono);
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-top: 2px solid var(--ink);
+  padding-top: 11px;
+  margin-bottom: 26px;
+}
+.offer__total::before { content: "Subtotal"; margin-right: auto; color: #6a6354; }
+.offer__total b { font-size: 15px; }
+.offer__reveal { text-align: center; }
+.offer__waive { font-size: 17px; font-weight: 500; color: #1d1d1b; }
+.offer__waive s { color: #6a6354; }
+.rcpt__due {
+  font-family: var(--f-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 13px;
+  color: #6a6354;
+  margin: 14px 0 0;
+}
+.offer__card .offer__big {
+  font-family: var(--f-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: clamp(52px, 14vw, 92px);
+  line-height: 1;
+  color: var(--volt-blue-deep);
+  margin: 2px 0 8px;
+}
+.offer__then { font-size: 16.5px; font-weight: 600; color: var(--ink); }
+/* one tight direct-response paragraph — bold hooks carry the skim, muted
+   body recedes, italic serif closes it out. center-aligned to match the
+   rest of the card. */
+.offer__copy { max-width: 600px; margin: 14px auto 0; text-align: center; }
+.offer__copy-body {
+  font-size: 14px;
+  line-height: 1.55;
+  color: #6a6456;
+  margin: 0;
+  text-wrap: pretty; /* no orphan word stranded on the last line */
+}
+.offer__copy-payoff { margin-top: 14px; }
+.offer__copy-body b { color: var(--ink); font-weight: 700; }
+.offer__copy-body i {
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  color: #4a463c;
+}
+.offer__pill { margin-top: 20px; font-size: 17px; padding: 15px 32px; }
+
+/* schedule sub-headings inside the card ("To get you launched", "Every month after") */
+.offer__sched-label {
+  font-family: var(--f-mono);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 13px;
+  color: var(--volt-blue-deep);
+  margin: 4px 0 14px;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed #bdb49d;
+}
+.offer__sched-label span { font-weight: 500; text-transform: none; letter-spacing: 0; color: #6a6354; white-space: nowrap; } /* keep "(one-time)" whole — at 320 it broke after the hyphen, stranding "time)" on its own line */
+.offer__menu + .offer__sched-label { margin-top: 26px; }
+
+/* reveal copy added with the value stack */
+.offer__normal { font-size: clamp(14px, 1.9vw, 17px); letter-spacing: -0.01em; white-space: nowrap; color: #36352f; margin-bottom: 6px; }
+.offer__strike {
+  font-family: var(--f-head);
+  text-transform: uppercase;
+  font-size: clamp(18px, 2vw, 24px);
+  color: var(--ink);
+  margin: 2px 0 4px;
+  text-wrap: balance; /* @320 this wrapped to 3 lines stranding "$10,300." alone; balance evens the wrap */
+}
+.offer__fine { font-family: var(--f-mono); font-size: 12px; color: #6a6354; margin-top: 14px; letter-spacing: 0.01em; }
+.offer__fine b { color: #6b6450; font-weight: 700; }
+
+/* printed footer: thank-you line + faux barcode torn off the bottom */
+.rcpt__foot { text-align: center; margin-top: 26px; }
+.rcpt__thanks {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: #6a6354;
+  margin: 4px 0 14px;
+}
+.rcpt__barcode {
+  height: 50px;
+  width: min(280px, 78%);
+  margin: 0 auto 9px;
+  background: repeating-linear-gradient(90deg,
+    var(--ink) 0 2px, transparent 2px 4px,
+    var(--ink) 4px 5px, transparent 5px 9px,
+    var(--ink) 9px 12px, transparent 12px 13px,
+    var(--ink) 13px 15px, transparent 15px 19px);
+}
+.rcpt__code {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  letter-spacing: 0.3em;
+  color: var(--ink);
+  margin: 0;
+}
+
+/* ===== GUARANTEES ===== */
+.guarantees { padding: 10px 0 70px; }
+.g__title {
+  text-align: center;
+  font-family: var(--f-head);
+  text-transform: uppercase;
+  font-size: clamp(28px, 3.8vw, 50px);
+  color: var(--ink);
+  margin-bottom: 34px;
+}
+.g__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px;
+  max-width: 980px;
+  margin: 0 auto 30px;
+}
+.g__card {
+  background: #fdfbf5;
+  border: 2px solid var(--volt-blue-bright);
+  border-radius: 16px;
+  box-shadow: 0 6px 16px rgba(40,35,20,0.08);
+  padding: 22px 26px 24px;
+  position: relative;
+}
+.g__num {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: #6a6354;
+  display: block;
+  margin-bottom: 8px;
+}
+.g__name {
+  font-family: var(--f-head);
+  text-transform: uppercase;
+  font-size: 17px;
+  line-height: 1.2;
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+.g__body { font-size: 14.5px; line-height: 1.5; color: #36352f; }
+.g__billing {
+  max-width: 980px;
+  margin: 0 auto;
+  background: #1d1c1a;
+  color: #f3ecdf;
+  border-radius: 18px;
+  padding: 22px 30px;
+  text-align: center;
+}
+.g__billing p { font-size: 16px; line-height: 1.6; }
+.g__billing b { color: #fff; }
+.g__billing em { color: var(--volt-blue-bright); font-style: italic; }
+@media (max-width: 760px) {
+  .g__grid { grid-template-columns: 1fr; }
+}
+/* long menu rows start colliding with the dotted leaders below ~860 */
+@media (max-width: 860px) {
+  .offer__menu li { flex-wrap: wrap; }
+  .offer__dots { display: none; }
+  .offer__price { margin-left: auto; white-space: nowrap; }
+  /* the sticker recap must stay one line — scale the type down instead of wrapping */
+  .offer__normal { white-space: nowrap; font-size: clamp(10px, 3.2vw, 16px); letter-spacing: -0.03em; } /* 3.2vw = 10.24px @320: ink 239px in the 252px box; higher slopes overflow the smallest phones */
+  /* CTA label must stay on one line — scale the type down instead of wrapping.
+     Archivo Black @3.8vw + 14px side padding fits the card content box @320. */
+  .offer__pill { white-space: nowrap; font-size: clamp(12px, 3.8vw, 17px); padding: 14px; }
+  /* keep the starred guarantee line whole; tighten tracking so it fits @320 */
+  .rcpt__thanks { white-space: nowrap; font-size: clamp(9px, 3.1vw, 12px); letter-spacing: 0.06em; }
+  /* `balance` re-evens the sub's lines at ~250px no matter how wide the box
+     is, so on phones the copy read as heavily padded (~62px visual gutters
+     at 375). `pretty` lets lines fill the container; the nbsp-bound
+     "Here's the receipt:" in the markup keeps the last line from stranding
+     a fragment at any width. */
+  .offer__sub { text-wrap: pretty; }
+}
+/* The reveal paragraph must hold 5 lines max ("restored, plus $99." was
+   pushed to a 6th). It needs ≥304px of measure; small phones only gave it
+   290. Reclaim gutter — the blueprint side slivers are 16px here, so a
+   20px container inset still clears them — and slim the card's side pad.
+   The vw font ramp keeps 5 lines down to ~345px screens. */
+@media (max-width: 480px) {
+  .offer > .container { padding-left: 20px; padding-right: 20px; }
+  .offer__card { padding-left: 14px; padding-right: 14px; }
+  .offer__copy-body { font-size: clamp(12px, 3.6vw, 14px); }
+}
+/* The receipt "masthead" is one line with a "·" separator on desktop, but its
+   single-line width (551px @22px) doesn't fit the card box until ~660px viewport
+   — so on phones it wraps to two lines and the lone "·" strands at a line edge
+   (orphan punctuation) at every mobile width. Reuse the existing 760px breakpoint
+   (no new boundary; ≥761 the line fits): below it, drop the separator and stack
+   the two phrases as clean centered lines instead. */
+@media (max-width: 760px) {
+  .rcpt__sep { display: none; }
+  .rcpt__tag-part { display: block; }
+}
+
+/* final CTA recap line under the pill */
+.fcta__recap {
+  margin-top: 18px;
+  font-family: var(--f-cond);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12.5px;
+  color: #3a3933;
+}
+
+/* ===== WIDE VIEWPORTS (>1440) =====
+   The blueprint border columns / rips are viewport-anchored, but most content
+   sits in the centered --maxw container with clamp() caps tuned for ~1440 —
+   past that, EDGE-ALIGNED sections strand mid-page while the framing hugs the
+   edges (same failure the hero/topbar fix solved), and big-type CENTERED
+   bands (process) shrink relative to the growing frame. Everything lives in this min-width
+   block so layout at ≤1440 is byte-for-byte unchanged; clamp slopes are
+   re-derived to pass through each property's 1440 value and reach its natural
+   vw value at 1920, freezing again past 1920. */
+@media (min-width: 1441px) {
+  /* dialed-in: left-aligned head + right-tucked portrait must track the
+     border columns like the hero copy/art do */
+  .dialed-in > .container { max-width: none; }
+  /* dialed-in type is h1-tier (hero-matched): like the hero, its tokens run
+     their own slopes to ~1930 (--fs-h1) or freeze at their caps (kicker/body),
+     so no re-derived sizes here */
+  .dialed__art {
+    /* old 84px cap only bound above 1527 — extend to 5.5vw @1920 */
+    top: clamp(36px, 5.5vw, 106px);
+    /* 44vw - 54px = the current 580px cap at 1440; 791px = the value @1920,
+       so the portrait keeps pace with the growing copy column */
+    width: clamp(580px, calc(44vw - 54px), 791px);
+    /* the capped container put the art's right edge 10px INSIDE the viewport
+       (1420 + 10px overhang at 1440); against the uncapped container, -10px
+       would push it off-screen instead */
+    right: 10px;
+  }
+  /* the head/bubble are %-of-container — freeze them at their 1920 widths
+     (60% / 57% of the 1568px content box) so they stop growing with the
+     viewport once the type freezes */
+  .dialed__head { max-width: min(60%, 941px); }
+  .dialed__bubble { max-width: 894px; }
+  /* old 110px cap bound above 1467 — extend to 7.5vw @1920 */
+  .quote-mark { font-size: clamp(76px, 7.5vw, 144px); }
+
+  /* real-results: keep the title container tracking the viewport (the phones
+     marquee is full-bleed on its own and doesn't need this) */
+  .real-results > .container { max-width: none; }
+  /* h3 continuation (matches .cs__head): through the 40px cap at 1440, 55px @1920 */
+  .rr__title { font-size: clamp(40px, calc(3.1vw - 4.6px), 55px); }
+
+  /* process: type froze at its ~1280 caps while the band, rip, and border
+     columns keep growing. Re-cap the containers at the 1920-equivalent width
+     (1920 incl. the 2×176px --pad-hero gutters) so the steps grid keeps
+     tracking the border columns to 1920 and freezes past it — squiggle/bolt
+     stay anchored to the grid edges. */
+  .process .container { max-width: 1920px; }
+  /* (title needs no re-cap here: its base 5vw/96px poster clamp already
+     tracks to 1920) */
+  /* lead continuation: 1.39vw = the 20px --fs-lead cap at 1440; 27px @1920 */
+  .proc__sub { font-size: clamp(20px, 1.39vw, 27px); }
+  /* arrow re-anchored in em so it tracks the scaling sub (50/38/-60/-10px ÷ 18px) */
+  .proc__arrow { width: 2.78em; height: 2.11em; left: -3.33em; top: -0.56em; }
+  /* 11vw - 8px = the current 150px cap at 1440; 203px = the value @1920 */
+  .pstep__num { font-size: clamp(150px, calc(11vw - 8px), 203px); }
+  /* ►► separator keeps pace: 1.18vw = the current 17px at 1440 */
+  .pstep:not(:last-child) .pstep__num::after { font-size: clamp(17px, 1.18vw, 23px); }
+  /* 0.9vw = the current fixed 13px at 1440 */
+  .pstep__label { font-size: clamp(13px, 0.9vw, 17px); }
+  .pstep__desc {
+    /* small-tier continuation (matches .cs__impl li); the old 13px floor
+       dipped BELOW the 14px base at 1441 */
+    font-size: clamp(14px, 0.97vw, 19px);
+    /* 15.3vw = the current 220px cap at 1440; 294px = the value @1920 */
+    max-width: clamp(220px, 15.3vw, 294px);
+  }
+  /* Tesla portrait keeps the mockup's 31vw proportion to 1920 (old 460px cap
+     only bound above 1483). Masks/anchors are viewport-derived and width-
+     independent, so only the cap moves. */
+  .proc__portrait img { width: clamp(280px, 31vw, 595px); }
+
+  /* offer: centered patent card froze at 920px / ~1280 type caps — scale the
+     card and its type with the band to 1920, freeze past it. The card stays
+     well inside the bp-band's 1568px content width, so the container cap
+     stays put. */
+  /* h2 continuation — 3.9vw - 6px = 50px cap at 1440; 69px @1920 */
+  .offer__title { font-size: clamp(50px, calc(3.9vw - 6px), 69px); }
+  /* matches .proc__sub lead continuation */
+  /* trim the side inset so "receipt:" stays on the same line */
+  .offer__sub { font-size: clamp(20px, 1.39vw, 27px); margin-left: -48px; margin-right: -48px; }
+  /* receipt slip stays a fixed-width slip — it should not balloon on big screens */
+  .offer__receipt { max-width: 940px; }
+  .offer__card {
+    padding: calc(var(--peak) + 32px) clamp(24px, 3vw, 52px) calc(var(--peak) + 28px);
+  }
+  .offer__menu { gap: clamp(13px, 0.9vw, 17px); }
+  /* 1.04vw = the current 15px at 1440 */
+  .offer__menu li { font-size: clamp(15px, 1.04vw, 20px); }
+  .offer__price { font-size: clamp(16px, 1.11vw, 21px); }
+  /* 0.73vw = the current 10.5px at 1440 */
+  .offer__free { font-size: clamp(10.5px, 0.73vw, 14px); }
+  .offer__total { font-size: clamp(15px, 1.04vw, 20px); }
+  /* 1.18vw = the current 17px at 1440 */
+  .offer__waive { font-size: clamp(17px, 1.18vw, 23px); }
+  /* 6vw - 10.4px = the current 76px cap at 1440; 105px = the value @1920 */
+  .offer__big { font-size: clamp(100px, calc(8vw - 13px), 140px); }
+  /* 1.15vw = the current 16.5px at 1440 */
+  .offer__then { font-size: clamp(16.5px, 1.15vw, 22px); }
+  .offer__copy {
+    /* 37.5vw = the current 540px cap at 1440; 720px = the value @1920 */
+    max-width: clamp(540px, 37.5vw, 720px);
+  }
+  .offer__copy-body { font-size: clamp(14px, 0.97vw, 19px); }
+  .offer__sched-label { font-size: clamp(14px, 0.97vw, 18px); }
+  /* 1.18vw = the current 17px at 1440 */
+  .offer__normal { font-size: clamp(17px, 1.18vw, 22px); }
+  .offer__fine { font-size: clamp(13px, 0.9vw, 17px); }
+  /* pill padding in em so it tracks its scaling label (15/32px ÷ 17px) */
+  .offer__pill { font-size: clamp(17px, 1.18vw, 23px); padding: 0.88em 1.88em; }
+
+  /* case studies (a/b/c, shared classes): the media column is width:100% of
+     its grid track so it scales with the container — re-cap the containers
+     at the 1920-equivalent (a/c sit in bp-bands with 176px gutters, b uses
+     the plain 64px --pad; both freeze past 1920) and put the type on the
+     same re-derived slopes. */
+  .case-study .container { max-width: 1920px; }
+  /* funnel container tracks the same re-cap so its content edges keep
+     lining up with case-c's 176px-gutter band above */
+  .funnel > .container { max-width: 1920px; }
+  /* funnel type joins the shared h2/lead/h4/body continuations now that it's
+     on the token scale (was Oswald with its own caps, frozen past 1440) */
+  .fn__title { font-size: clamp(50px, calc(3.9vw - 6px), 69px); }
+  .fn__sub { font-size: clamp(20px, 1.39vw, 27px); }
+  .fn__stage { font-size: clamp(22px, 1.53vw, 29px); }
+  .fn__stage-d { font-size: clamp(16px, 1.11vw, 21px); }
+  /* the stage column's fixed caps (440 track / 420 list @1440) must ride the
+     same slope as the type above, or the longest description outgrows the
+     box and wraps mid-desktop (~1500px+) */
+  .fn__diagram { grid-template-columns: calc(50% + var(--fn-lgap)) minmax(0, clamp(440px, 30.6vw, 578px)); }
+  .fn__stages { max-width: clamp(420px, 29.2vw, 551px); }
+  /* 3.06vw = the current 44px gap at 1440 */
+  .cs__grid { gap: clamp(44px, 3.06vw, 59px); }
+  /* h4 continuation (matches .cs__impl-head) */
+  .cs__ba-labels { font-size: clamp(22px, 1.53vw, 29px); }
+  /* 3.1vw - 4.6px = the current 40px cap at 1440; 55px = the value @1920 */
+  .cs__head { font-size: clamp(40px, calc(3.1vw - 4.6px), 55px); }
+  /* headline doodles re-anchored in em (px ÷ the head's 40px at 1440) */
+  .cs__head-bolt { width: 0.5em; height: 0.75em; top: -0.65em; }
+  .cs__head-spark { width: 0.65em; height: 0.65em; top: -0.6em; left: -0.2em; }
+  .cs__head-scrib { width: 1em; height: 0.7em; margin-left: 0.25em; }
+  .cs__desc {
+    /* body continuation: 1.11vw = the 16px --fs-body cap at 1440 */
+    font-size: clamp(16px, 1.11vw, 21px);
+    /* 38.9vw = the current 560px cap at 1440; 747px = the value @1920 */
+    max-width: clamp(560px, 38.9vw, 747px);
+  }
+  /* 36.1vw = the current 520px cap at 1440 */
+  .cs__stats { max-width: clamp(520px, 36.1vw, 693px); }
+  /* 3.6vw - 5.8px = the current 46px cap at 1440; 63px = the value @1920 */
+  .cstat__num { font-size: clamp(46px, calc(3.6vw - 5.8px), 63px); }
+  /* 0.83vw = the current 12px at 1440 */
+  .cstat__cap { font-size: clamp(12px, 0.83vw, 16px); }
+  /* 1.53vw = the current 22px at 1440 */
+  .cs__impl-head { font-size: clamp(22px, 1.53vw, 29px); }
+  /* 0.97vw = the current 14px at 1440 */
+  .cs__impl li { font-size: clamp(14px, 0.97vw, 19px); }
+  /* case-b 2x2 stacked stats variant — generous column gap separates the two
+     columns; large nums comfortably fit two-per-row in the copy column. */
+  .cs__stats--row { gap: clamp(28px, 1.95vw, 34px) clamp(90px, 6.25vw, 120px); }
+  .cs__stats--row .cstat__num { font-size: clamp(52px, calc(4vw - 5.6px), 63px); }
+  /* captions sit on one line in case-b (matches case-a stat block) */
+  .cs__stats--row .cstat__cap { max-width: none; white-space: nowrap; }
+}
+
+/* ===== LEGAL PAGES (terms.html / privacy.html) ===== */
+.legal { max-width: 760px; margin: 0 auto; padding: 56px var(--pad) 96px; }
+.legal h1 {
+  /* document masthead on the shared scale: h2 tier + --f-head like every
+     section head (was a one-off Anton clamp — no poster composition here) */
+  font-family: var(--f-head);
+  text-transform: uppercase;
+  font-size: var(--fs-h2);
+  line-height: 1.04;
+  margin: 0 0 6px;
+}
+.legal .legal__date { font-family: var(--f-mono); font-size: var(--fs-small); color: #6f6c64; margin: 0 0 40px; }
+.legal h2 {
+  font-family: var(--f-head);
+  text-transform: uppercase;
+  font-size: var(--fs-h4);
+  margin: 40px 0 10px;
+}
+.legal p, .legal li { font-size: var(--fs-body); line-height: 1.65; color: #232321; }
+.legal ul { padding-left: 22px; }
+.legal a { color: var(--volt-blue-deep); text-decoration: underline; }
+.legal .legal__note {
+  margin-top: 56px;
+  padding: 18px 22px;
+  border: 2px dashed var(--paper-edge);
+  font-family: var(--f-mono);
+  font-size: 13.5px;
+  color: #6f6c64;
+}
+.legal-footer { text-align: center; padding: 28px 0 48px; font-size: 13px; color: #6f6c64; }
+.legal-footer a { color: inherit; text-decoration: underline; padding: 8px; }
+
+/* ============ REDUCED MOTION ============ */
+/* Honor the OS "reduce motion" preference (WCAG 2.3.3). The page's only motion
+   is small interaction transitions (pill lift/press, logo lift, link fades);
+   neutralize them to near-instant for users who opt out. Purely additive —
+   no effect on the default experience. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}

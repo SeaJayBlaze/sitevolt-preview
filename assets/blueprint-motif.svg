@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620">
+  <g fill="none" stroke="#1f5fe6" stroke-width="1.1" opacity="0.22">
+    <!-- circuit / schematic line art, sparse, technical -->
+    <circle cx="90" cy="90" r="34"/>
+    <circle cx="90" cy="90" r="20"/>
+    <path d="M10 90 H56 M124 90 H210"/>
+    <rect x="180" y="40" width="80" height="44" rx="4"/>
+    <path d="M260 62 H340 M300 84 V120"/>
+    <!-- resistor zigzag -->
+    <path d="M380 70 h14 l8 -12 l16 24 l16 -24 l16 24 l8 -12 h14"/>
+    <!-- coil -->
+    <path d="M470 150 q12 -20 24 0 q12 -20 24 0 q12 -20 24 0"/>
+    <!-- big technical circle bottom-left -->
+    <circle cx="120" cy="430" r="70"/>
+    <path d="M50 430 H120 V360 M120 430 L175 485"/>
+    <circle cx="120" cy="430" r="6" fill="#1f5fe6"/>
+    <!-- gear-ish ticks -->
+    <circle cx="470" cy="440" r="48"/>
+    <g stroke-width="1">
+      <path d="M470 380 V392 M470 488 V500 M410 440 H422 M518 440 H530"/>
+      <path d="M428 398 l8 8 M512 482 l-8 -8 M512 398 l-8 8 M428 482 l8 -8"/>
+    </g>
+    <!-- dimension lines -->
+    <path d="M40 250 H260 M40 245 V255 M260 245 V255"/>
+    <path d="M360 560 H560 M360 555 V565 M560 555 V565"/>
+    <!-- capacitor -->
+    <path d="M300 200 v40 M280 240 h40 M280 252 h40 M300 252 v40"/>
+    <!-- lightning bolt schematic -->
+    <path d="M560 60 l-22 40 h16 l-20 46" stroke-width="1.4"/>
+  </g>
+</svg>
