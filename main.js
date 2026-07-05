@@ -191,7 +191,13 @@ document.addEventListener("submit", (e) => {
     if (started) return;
     started = true;
     vid.preload = "auto"; // start buffering during the 0.9s rise
-    requestAnimationFrame(() => box.classList.add("is-in")); // rise
+    // flush the sunk (is-prep) style before flipping to is-in, and wait two
+    // rAFs — a single one fires before the pending paint, so both classes
+    // would land in the same frame and the transition would never run
+    void box.offsetHeight;
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => box.classList.add("is-in"))
+    ); // rise
     setTimeout(() => {
       vid.play().catch(() => {}); // blocked autoplay ⇒ static poster, fine
     }, 950);

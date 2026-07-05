@@ -680,12 +680,19 @@ h1, h2, h3, h4, p { margin: 0; }
    viewport, converted to cell coordinates like the old rule). */
 .hero__vidbox {
   position: absolute;
-  right: calc(-1 * (var(--pad-hero) - var(--border-w) - 4px));
-  bottom: -120px;        /* sleeve bottom clipped by the torn rip (z 4) */
-  /* portrait clip (480x816): width drives height, so it grows much gentler
-     than the old landscape art — 426px at 1280, capped 500 so the frame
-     never climbs past the hero top on wide screens */
-  width: clamp(340px, calc(30vw + 42px), 500px);
+  right: calc(-1 * (var(--pad-hero) - var(--border-w)));  /* right edge flush
+     with the column's inner edge: any gap leaves a cream sliver where the
+     sleeve runs off the frame's bottom-right corner */
+  bottom: -130px;        /* sleeve bottom clipped by the torn rip (z 4) */
+  /* portrait clip (480x816). The box is OPAQUE (white knocks to flat cream),
+     so unlike the transparent Tesla webp it must clear the copy entirely:
+     - height: bottom anchor is y~918 and the headline's underline scribble
+       ends at y~352, so height caps at 566 -> width caps at 366 (48/74);
+       wider slices the "ONLY $1" underline tail off.
+     - left edge: the sub block ends at pad-hero + 540 = ~676-696px, so
+       width also caps at 100vw - 850 (right edge is ~vw-114..154, +20 gap).
+     Below ~1141 nothing sensible fits — the hero stacks (media block). */
+  width: clamp(330px, calc(100vw - 850px), 366px);
   /* crop the clip's empty white top ~9% (phone top sits at 13% of frame) */
   aspect-ratio: 48 / 74;
   overflow: hidden;
@@ -697,6 +704,15 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 .hero__vidbox.is-prep { transform: translateY(110px); }
 .hero__vidbox.is-in { transform: translateY(0); }
+/* Wide screens: past ~1520 the box clears the headline HORIZONTALLY, so it
+   may rise beside it and the height cap no longer binds — the frame's top is
+   empty white anyway and the hero's overflow:hidden clips whatever pokes past
+   the top. Headline ink keeps growing to the 83px --fs-h1 cap (~1930), so the
+   width must track it: ink right ~= 176px + 11.9em x 4.3vw = 176 + 51.2vw;
+   box right edge = 100vw - 154, minus a 20px+ gap => width <= 48.8vw - 370. */
+@media (min-width: 1520px) {
+  .hero__vidbox { width: clamp(370px, calc(48.8vw - 370px), 500px); }
+}
 .hero__vid {
   display: block;
   width: 100%;
@@ -742,8 +758,42 @@ h1, h2, h3, h4, p { margin: 0; }
   .hero__sub { font-size: 14px; }
 }
 
-@media (max-width: 860px) {
+/* Single-column hero comes EARLIER than the old Tesla layout (860): the video
+   box is an opaque rectangle, so side-by-side needs box-left >= sub-right
+   (~696px) — below ~1141 the width formula bottoms out and the art must drop
+   under the copy. The title keeps its desktop clamp in 861-1140 (42-56px,
+   fits the gutters); the 860 block below still handles phone title sizing. */
+@media (max-width: 1140px) {
   .hero__grid { grid-template-columns: 1fr; }
+  /* animation drops BELOW the copy (order:0 keeps DOM order).
+     position:static ignores the desktop right/bottom offsets, but reset
+     them anyway (see: mobile relative overrides keeping base offsets) */
+  .hero__art { order: 0; align-self: auto; max-width: none; margin: 0; }
+  .hero__vidbox {
+    position: static;
+    right: auto; bottom: auto;
+    width: min(340px, 78vw);
+    /* The frame cuts the sleeve at its right and bottom edges, so the arm
+       can't float mid-cream in the stacked flow — anchor it like desktop:
+       - flush right into the border column (margin-right unwinds the
+         container's pad-hero down to the column's inner edge), so the
+         sleeve reads as reaching in from off-page;
+       - bottom sunk into the torn rip: hero padding-bottom is
+         10.88vw + 96px and the rip is 10.88vw tall, so -140px puts the
+         sleeve ~44px below the rip's top edge at every stacked width —
+         the tear clips the arm exactly like desktop. */
+    margin: 24px calc(var(--border-w) - var(--pad-hero)) -140px auto;
+    /* crop a touch harder when stacked (~10.6% off the top vs 9%): flow
+       height matters here. Phone top edge sits at ~13% of the frame — don't
+       go past 48/72 or the bezel clips */
+    aspect-ratio: 48 / 73;
+  }
+  /* the CTA arrow points at the pill FROM the art's gap; in single column
+     it has no referent and strands in dead space to the pill's right */
+  .hero__arrow { display: none; }
+}
+
+@media (max-width: 860px) {
   /* Single-column hero: the desktop clamp floors at 34px and the 4.3vw term
      can't beat it until ~790px, so the headline was stuck tiny across this whole
      band while the wordmark loomed beside it. Scale it with the viewport again.
@@ -755,25 +805,9 @@ h1, h2, h3, h4, p { margin: 0; }
      gutters (--pad-hero with the 74px border tiles): (100vw - 200px)/11.9
      with ~4px slack. */
   .hero__title.hero__title--offer { font-size: clamp(18px, calc(8.4vw - 17px), 58px); }
-  /* animation drops BELOW the copy (order:0 keeps DOM order), centered in
-     the flow. position:static ignores the desktop right/bottom offsets, but
-     reset them anyway (see: mobile relative overrides keeping base offsets) */
-  .hero__art { order: 0; align-self: auto; max-width: none; margin: 0; }
-  .hero__vidbox {
-    position: static;
-    right: auto; bottom: auto;
-    width: min(300px, 78vw);
-    margin: 24px auto 0;
-    /* crop a touch harder on phones (~10.6% off the top vs 9%): flow height
-       matters here. Phone top edge sits at ~13% of the frame — don't go past
-       48/72 or the bezel clips */
-    aspect-ratio: 48 / 73;
-  }
-  /* the CTA arrow points at the pill FROM the art's gap; once the art drops
-     below the copy (single column) the arrow has no referent and strands in
-     dead space to the pill's right — hide it across the whole single-col range
-     (was only hidden ≤480, so it reappeared 481–860 and wrapped the pill) */
-  .hero__arrow { display: none; }
+  /* single-column art/arrow handling lives in the 1140 block above; phones
+     just narrow the animation so the copy stays the star */
+  .hero__vidbox { width: min(300px, 78vw); }
 }
 @media (max-width: 768px) {
   /* Phone gutters are 30px each side (--pad-hero), so the max size that keeps
@@ -1134,11 +1168,26 @@ h1, h2, h3, h4, p { margin: 0; }
    with the viewport. 7.2vw keeps the longer balanced line ("REAL BIG
    RESULTS.", ~11.2em ink) inside the --pad-hero gutters down to ~360px. */
 @media (max-width: 820px) { .rr__title { font-size: clamp(26px, 7.2vw, 34px); } }
+/* "REAL BIG TALK. WE KNOW." hand-off heading — closes the cream band under
+   the phones (moved down from the dark testimonials shelf), sitting on the
+   16px shelf the section's bottom padding keeps above the tear. The 72px top
+   margin is the breathing room below the phone bottoms; the marquee's
+   padding/negative-margin pair nets to zero so this margin IS the gap. */
+.rr__talk { margin: 72px 0 0; }
+@media (max-width: 880px) {
+  .rr__talk {
+    margin-top: 56px;
+    /* balance splits this one as "REAL BIG / TALK. WE KNOW." — kill it so the
+       wrap lands at the sentence break instead: the nowrap .rr__ul span keeps
+       "WE KNOW." whole, so the line breaks after "TALK." ("REAL BIG TALK."
+       ink fits the --pad-hero gutters down to 320px) */
+    text-wrap: wrap;
+  }
+}
 /* hand-drawn blue underline under a word — same treatment as "DIALED IN.",
    long stroke + shorter second scribble beneath, as in the banner ref
-   (.tst__ul reuses it under the testimonials heading's "WE KNOW.") */
-.rr__ul,
-.tst__ul {
+   (also under the .rr__talk heading's "WE KNOW.") */
+.rr__ul {
   white-space: nowrap;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 22' preserveAspectRatio='none'%3E%3Cpath d='M4 6 C60 2 140 3 196 5' fill='none' stroke='%232f6bff' stroke-width='4.5' stroke-linecap='round'/%3E%3Cpath d='M28 15 C90 11 150 12 180 13' fill='none' stroke='%232f6bff' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -1258,9 +1307,11 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 
 @media (max-width: 880px) {
-  /* stacked: a clear cream shelf under the phone bottoms before the
-     testimonials tear bites in (the tear was kissing the bezels) */
-  .real-results { padding-bottom: 72px; }
+  /* stacked: a clear cream shelf under the heading before the testimonials
+     tear bites in — the 10.9vw term keeps tracking the rip height (flat 72px
+     let the tear overlap the heading in the 600–880 band where the rip is
+     taller than the shelf) */
+  .real-results { padding-bottom: max(72px, 10.9vw + 16px); }
 }
 
 /* ===== TESTIMONIALS (§7) ===== */
@@ -1308,11 +1359,12 @@ h1, h2, h3, h4, p { margin: 0; }
   --stk: clamp(160px, 15vw, 208px);
   /* center the burst on the card's top-right corner, biased up-right (16px
      over, 26px up) so the spike tips clear the star row / quote ink at 900px
-     where the card is narrowest (verified 900–1920).
-     Corner-y = section pad (104) + title line box (fs-h3 × 1.05) + its 44px
-     margin; corner-x (from the right) = centered container edge + --pad
+     where the card is narrowest.
+     Corner-y = section pad (104 — the heading that used to sit above the
+     cards now lives in the cream band, so the cards lead the section);
+     corner-x (from the right) = centered container edge + --pad
      + next arrow (~31px) + the wrap's 24px gap */
-  top: calc(104px + var(--fs-h3) * 1.05 + 44px - var(--stk) / 2 - 26px);
+  top: calc(104px - var(--stk) / 2 - 26px);
   right: calc((100% - min(var(--maxw), 100%)) / 2 + var(--pad) + 55px - var(--stk) / 2 - 16px);
   width: var(--stk); height: var(--stk);
   display: flex; align-items: center; justify-content: center;
@@ -1357,32 +1409,6 @@ h1, h2, h3, h4, p { margin: 0; }
     width: 156px; height: 156px;
     font-size: 19px;
     transform: rotate(10deg);
-  }
-}
-/* "BIG TALK. WE KNOW." hand-off heading in the black shelf above the cards —
-   it owns the brag the results band just made, so the starburst's "But don't
-   take it from us!" reads as the rebuttal that tees up the client cards */
-.tst__title {
-  text-align: center;
-  font-family: var(--f-head);
-  font-weight: 400;
-  text-transform: uppercase;
-  font-size: var(--fs-h3);
-  line-height: 1.05;
-  letter-spacing: 0.005em;
-  color: var(--paper);
-  margin-bottom: 44px;
-}
-@media (max-width: 880px) {
-  /* stacked: the sticker rides the band's top-right, so the heading locks up
-     beside it on the left — the right pad clears the sticker box (156px wide,
-     -26px overhang → its spikes start ~182px in from the right edge) and
-     forces the two sentences onto their own lines */
-  .tst__title {
-    text-align: left;
-    font-size: clamp(22px, 6vw, 30px);
-    padding-right: 150px;
-    margin-bottom: 30px;
   }
 }
 .tst__wrap {
