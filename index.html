@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Courier+Prime:wght@400;700&family=Kalam:wght@400;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=14" />
+  <link rel="stylesheet" href="styles.css?v=15" />
   <!-- The torn-edge scans + blueprint border tiles are structural chrome used
        at every band boundary (strip backgrounds AND the rip-borders carry-up
        masks). Preloading them closes the race where a tear strip paints but
@@ -26,6 +26,9 @@
   <link rel="preload" as="image" href="assets/torn-cream-paper-inverted.png" />
   <link rel="preload" as="image" href="assets/blueprint-border-left.webp" />
   <link rel="preload" as="image" href="assets/blueprint-border-right.webp" />
+  <!-- hero video poster (first frame) — the largest above-the-fold image, so
+       fetch it early; the video itself stays preload="metadata" until play -->
+  <link rel="preload" as="image" href="assets/hero-anim-poster.jpg" fetchpriority="high" />
 </head>
 <body>
   <!-- ============ URGENCY BAR (live month-end countdown) ============ -->
@@ -92,7 +95,20 @@
         <p class="hero__why">Why 5? Any more, the 14-day promise breaks.</p>
       </div>
       <div class="hero__art">
-        <img src="assets/sitevolt-hero-illustration-right.webp" alt="" width="1001" height="938" fetchpriority="high" />
+        <!-- Flip-the-switch hero clip: halftone hand holds a phone showing the
+             old Twin Cities Berry site; blue electricity arcs in and the screen
+             flips to the new red design, then freezes there (no loop). The box
+             paints flat --paper behind the video so mix-blend-mode: multiply
+             (on the video) knocks the clip's white background out to exact
+             page cream — .hero__grid is an isolated stacking context, so the
+             video can't blend against the body directly. JS in main.js slides
+             the box up from behind the rip, then plays once. -->
+        <div class="hero__vidbox" data-hero-anim aria-hidden="true">
+          <video class="hero__vid" muted playsinline preload="metadata"
+                 poster="assets/hero-anim-poster.jpg" width="480" height="816">
+            <source src="assets/hero-anim.mp4" type="video/mp4" />
+          </video>
+        </div>
       </div>
     </div>
     <img class="hero__rip" src="assets/hero-page-rip-charcoal.png" alt="" aria-hidden="true" width="2758" height="300" />

@@ -673,24 +673,46 @@ h1, h2, h3, h4, p { margin: 0; }
   position: relative;
   z-index: 1;            /* below .hero__rip (z 4) so the tear overlaps it */
 }
-.hero__art img {
+/* Hero animation box. The video is an opaque rectangle (white bg), so unlike
+   the old transparent Tesla webp it must NOT overlap the blueprint border
+   column — white-knocked-to-cream would erase the column art. Right edge sits
+   4px inside the column's inner edge (gap = --border-w + 4px from the
+   viewport, converted to cell coordinates like the old rule). */
+.hero__vidbox {
   position: absolute;
-  /* anchor the art's RIGHT edge to the viewport (not the grid cell): the
-     hero container is uncapped, so the cell right edge sits pad-hero from
-     the viewport edge; subtracting that converts a viewport gap into cell
-     coordinates. Resolves to the original -160px at 1280; at 1920/2560 the
-     coil tower keeps reaching the blueprint border column */
-  right: calc(-1 * (var(--pad-hero) - clamp(8px, 1.2vw, 60px)));
-  bottom: -130px;        /* very bottom clipped by the torn rip */
-  /* steeper-than-46vw slope: shrinks harder below 1280 so the art clears the
-     copy column at ~1024, grows past the old 640px cap so it balances wide
-     viewports; hits 584px at 1280 (parity with the build width) */
-  /* cap = the 62vw value at 1920 (was 800px = ~1440): keeps the art growing
-     toward the copy column on wide screens instead of stranding mid-gap */
-  width: clamp(380px, calc(62vw - 210px), 980px);
-  max-width: none;
-  height: auto;
-  filter: drop-shadow(0 10px 18px rgba(0,0,0,0.1));
+  right: calc(-1 * (var(--pad-hero) - var(--border-w) - 4px));
+  bottom: -120px;        /* sleeve bottom clipped by the torn rip (z 4) */
+  /* portrait clip (480x816): width drives height, so it grows much gentler
+     than the old landscape art — 426px at 1280, capped 500 so the frame
+     never climbs past the hero top on wide screens */
+  width: clamp(340px, calc(30vw + 42px), 500px);
+  /* crop the clip's empty white top ~9% (phone top sits at 13% of frame) */
+  aspect-ratio: 48 / 74;
+  overflow: hidden;
+  /* flat cream matching the body: the multiply backdrop for the video */
+  background: var(--paper);
+  /* entrance: JS (data-hero-anim) sinks the box 110px with .is-prep, then
+     .is-in rises it from behind the torn rip; then the clip plays once */
+  transition: transform 0.9s cubic-bezier(0.22, 0.9, 0.3, 1);
+}
+.hero__vidbox.is-prep { transform: translateY(110px); }
+.hero__vidbox.is-in { transform: translateY(0); }
+.hero__vid {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 100%;   /* keep the sleeve, crop the empty top */
+  /* knock the clip's white bg out to page cream: multiply against the box's
+     flat --paper. The clip's "white" drifts to ~rgb(250) late in the video;
+     brightness(1.02) lifts it back to 255 first so white x cream = exactly
+     the surrounding page (multiply of 250-white leaves a visible 2% patch) */
+  filter: brightness(1.02);
+  mix-blend-mode: multiply;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero__vidbox { transition: none; }
+  .hero__vidbox.is-prep { transform: none; }
 }
 
 /* keep the bullets as a 2x2 block of single-line items (matches target);
@@ -733,10 +755,20 @@ h1, h2, h3, h4, p { margin: 0; }
      gutters (--pad-hero with the 74px border tiles): (100vw - 200px)/11.9
      with ~4px slack. */
   .hero__title.hero__title--offer { font-size: clamp(18px, calc(8.4vw - 17px), 58px); }
-  /* Tesla drops BELOW the copy (order:0 keeps DOM order) and sits over the
-     torn rip at the section's bottom edge — same clipped look as desktop */
-  .hero__art { order: 0; align-self: auto; max-width: 330px; margin: 22px auto 0; }
-  .hero__art img { position: static; width: 100%; max-width: 330px; right: auto; bottom: auto; }
+  /* animation drops BELOW the copy (order:0 keeps DOM order), centered in
+     the flow. position:static ignores the desktop right/bottom offsets, but
+     reset them anyway (see: mobile relative overrides keeping base offsets) */
+  .hero__art { order: 0; align-self: auto; max-width: none; margin: 0; }
+  .hero__vidbox {
+    position: static;
+    right: auto; bottom: auto;
+    width: min(300px, 78vw);
+    margin: 24px auto 0;
+    /* crop a touch harder on phones (~10.6% off the top vs 9%): flow height
+       matters here. Phone top edge sits at ~13% of the frame — don't go past
+       48/72 or the bezel clips */
+    aspect-ratio: 48 / 73;
+  }
   /* the CTA arrow points at the pill FROM the art's gap; once the art drops
      below the copy (single column) the arrow has no referent and strands in
      dead space to the pill's right — hide it across the whole single-col range
@@ -1389,16 +1421,16 @@ h1, h2, h3, h4, p { margin: 0; }
   flex-direction: column;
   align-items: center;
   text-align: center;
-  /* was 1/1.5 — the portrait ratio left ~180px of dead air between the star
-     row and the centered quote at 1440; tightened so the gap reads as
-     breathing room, not a hole */
-  aspect-ratio: 1 / 1.12;
+  /* was 1/1.5, then 1/1.12 — the portrait ratio left dead air between the
+     star row and the centered quote at 1440; content needs ~256px, this
+     leaves ~25px of slack so the gap reads as breathing room, not a hole */
+  aspect-ratio: 1 / 0.75;
 }
 .tcard__stars {
   color: #fff;
   font-size: 17px;
   letter-spacing: 5px;
-  margin-bottom: 24px;
+  margin-bottom: 14px;
 }
 .tcard__quote {
   color: #e7e4dc;

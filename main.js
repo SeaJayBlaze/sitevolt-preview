@@ -163,3 +163,51 @@ document.addEventListener("submit", (e) => {
   input.placeholder = "You're on the list ⚡";
   if (status) status.textContent = "Thanks, you're on the list.";
 });
+
+// Hero animation choreography: the arm rises from behind the torn rip
+// (translateY transition on the box), then the clip plays ONCE and freezes on
+// its final "new website" frame (no loop attr — an ended video holds its last
+// frame). Entrance + play are gated on the box actually being visible
+// (IntersectionObserver), so on phones — where the art sits below the copy —
+// the moment isn't wasted off-screen before the user scrolls to it.
+(() => {
+  const box = document.querySelector("[data-hero-anim]");
+  if (!box) return;
+  const vid = box.querySelector("video");
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduce || !vid) {
+    // no motion: swap the poster (old ugly site) for the final new-site frame
+    // and never play — reduced-motion users get the payoff, not the tease
+    if (vid) { vid.preload = "none"; vid.poster = "assets/hero-anim-still.jpg"; }
+    return;
+  }
+  vid.muted = true; // defensive: autoplay policy needs it even with the attr
+  // sink NOW, at parse time (script sits at end of body, before first paint),
+  // so there's no flash of the settled box before the entrance. The hero's
+  // overflow:hidden + the rip (z 4) hide the sunk portion.
+  box.classList.add("is-prep");
+  let started = false;
+  const go = () => {
+    if (started) return;
+    started = true;
+    vid.preload = "auto"; // start buffering during the 0.9s rise
+    requestAnimationFrame(() => box.classList.add("is-in")); // rise
+    setTimeout(() => {
+      vid.play().catch(() => {}); // blocked autoplay ⇒ static poster, fine
+    }, 950);
+  };
+  if ("IntersectionObserver" in window) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          io.disconnect();
+          go();
+        }
+      },
+      { threshold: 0.35 }
+    );
+    io.observe(box);
+  } else {
+    go();
+  }
+})();
