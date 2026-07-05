@@ -1315,9 +1315,10 @@ h1, h2, h3, h4, p { margin: 0; }
      line and clears the centered star row's right end by ~20px */
   .tst__sticker {
     top: calc(11.5vw - 18px);
-    /* -2px here = the old container-relative -26px (24px gutter): spikes kiss
-       the edge, the text ink stays ~1px inside the viewport at 375 */
-    right: -2px;
+    /* ride off the screen edge — the die-cut spikes clip, but the text ink
+       (held to the blue disc by the span's max-width) stays ~5px inside the
+       viewport at 375 */
+    right: -26px;
     width: 156px; height: 156px;
     font-size: 19px;
     transform: rotate(10deg);
