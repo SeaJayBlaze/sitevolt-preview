@@ -93,7 +93,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 
 /* Taped torn-blueprint pieces framing cream stretches (left/right columns):
    the HERO (a self-contained "blueprint page" closed off by the page-rip at
-   its bottom) and the .bp-band wrappers (dialed-in → did-you-know, closed by
+   its bottom) and the .bp-band wrappers (dialed-in → real-results, closed by
    the testimonials tear; process steps → offer, closed by the data-driven
    tear), where the columns tile continuously until the closing tear. */
 .bp-band { position: relative; }
@@ -1069,7 +1069,10 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 
 /* ===== REAL RESULTS (§5) ===== */
-.real-results { padding: 30px 0 72px; }
+/* bottom padding tracks the testimonials rip height (300/2758 ≈ 10.9vw, it
+   rises over this band now that did-you-know is gone) so the tear kisses the
+   phone bottoms instead of slicing through the bezels at wide widths */
+.real-results { padding: 30px 0 calc(10.9vw - 12px); }
 /* the container only holds the centered title now — the phones marquee is a
    full-bleed sibling; padding just keeps the title clear of the columns */
 .real-results > .container { padding: 0 calc(var(--border-w) - 24px); }
