@@ -44,8 +44,8 @@
   /* Type scale — hero-derived (see DESIGN.md §3). At the 1280 build width:
      h1 55 / h2 50 / h3 40 / h4 20 / lead-hero 22 / lead 19 / body 16 / small 14.
      Head:lead holds the hero's ~2.5:1 ratio (h1 55 : lead-hero 22 = h2 50 :
-     lead 20). Poster bands (--f-display: DYK, BEFORE & AFTER, final-CTA
-     ribbon title, step numerals), the receipt card, and component chrome
+     lead 20). Poster bands (--f-display: IMAGINE-YOUR-SITE band, process
+     title, final-CTA ribbon title, step numerals), the receipt card, and component chrome
      (pills, eyebrows, bars, footer) are sanctioned exceptions that size by
      composition instead. Text elements pick from these tokens — don't mint
      new clamp() sizes. */
@@ -460,23 +460,6 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 .topbar__link:hover { opacity: 0.7; }
 
-/* Topbar CTA: sticker with ink outline (CTA color via tokens) */
-.topbar__nav .pill {
-  background: var(--cta-bg);
-  color: var(--cta-ink);
-  border: 2.5px solid var(--ink);
-  font-size: 15px;
-  letter-spacing: 0.02em;
-  padding: 11px 24px;
-}
-.topbar__nav .pill:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.04);
-}
-.topbar__nav .pill:active {
-  transform: translateY(2px);
-}
-
 /* ---------- 6. SECTIONS (built per iteration) ---------- */
 /* placeholder min-heights so the skeleton is visible before each
    section is built; removed as each section gets real content. */
@@ -515,15 +498,15 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 .hero__grid {
   display: grid;
-  grid-template-columns: 1.5fr 0.5fr;   /* more room for copy; Tesla overflows his cell */
+  grid-template-columns: 1.5fr 0.5fr;   /* more room for copy; the video box overflows its cell */
   align-items: center;
   gap: 20px;
 }
 /* Hero eyebrow — stamped tag above the H1 so the headline reads as the
    anchored top of a hero composition instead of copy floating mid-page.
-   Blue = --volt-blue-bright, the SAME ink as the scribble underlines, so the
-   chip and the "$1" underline read as one hand. Tight 14px gap below (less
-   than the H1→sub gap) locks eyebrow+headline into a single unit. */
+   Blue stays in the blueprint family so the chip and the "$1" underline read
+   as one hand. Tight 14px gap below (less than the H1→sub gap) locks
+   eyebrow+headline into a single unit. */
 .hero__eyebrow {
   display: inline-block;
   /* --volt-blue-deep, not -bright: paper text needs 4.5:1 at this 14px size
@@ -543,7 +526,7 @@ h1, h2, h3, h4, p { margin: 0; }
 .hero__title {
   font-family: var(--f-head);   /* wide, heavy gothic (matches reference) */
   font-weight: 400;
-  font-size: clamp(38px, 4.9vw, 70px);   /* 3 stacked lines; longest ("PULL THE PLUG") clears the Tesla art */
+  /* size lives on .hero__title--offer (--fs-h1) + its phone ramps below */
   line-height: 0.95;
   letter-spacing: -0.015em;
   color: var(--ink);
@@ -587,7 +570,7 @@ h1, h2, h3, h4, p { margin: 0; }
 .hero__sub {
   font-size: var(--fs-lead-hero);   /* scales down at narrow widths so the body doesn't sit at a flat 17px floor while the title shrinks toward it (ratio was ~2.3:1 at ~484px) */
   line-height: 1.5;
-  max-width: clamp(540px, 37.5vw, 720px);   /* clears the Tesla art overlay */
+  max-width: clamp(540px, 37.5vw, 720px);   /* bounds the lead measure; clears the video box */
   margin: 24px 0 26px;
   color: #2a2a28;
   text-wrap: pretty;   /* no single-word orphan on the last line */
@@ -678,7 +661,7 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 .hero__arrow { width: 92px; height: 56px; transform: translateY(-10px); flex: 0 0 auto; }
 /* art is anchored to the bottom of the hero so the torn-paper rip
-   clips Tesla off at the bottom edge (matches target) */
+   clips it off at the bottom edge (matches target) */
 .hero__art {
   align-self: stretch;
   position: relative;
@@ -706,7 +689,7 @@ h1, h2, h3, h4, p { margin: 0; }
      above the hero bottom, deep enough that the cut drowns in the ink. */
   bottom: calc(-28px - 12.2vw);
   /* portrait clip (480x816). The box is OPAQUE (white knocks to flat cream),
-     so unlike the transparent Tesla webp it must clear the copy entirely:
+     so unlike the old transparent hero art it must clear the copy entirely:
      - height: with the deeper bottom anchor above, the top stays clear of
        the "ONLY $1" underline tail up to ~430 wide (48/74);
      - left edge: headline line 2 ink ("14 DAYS FOR ONLY $1" + underline)
@@ -806,7 +789,7 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 
 /* keep the bullets as a 2x2 block of single-line items (matches target);
-   tighten type + gap so the right column clears the bottom-anchored Tesla */
+   tighten type + gap so the right column clears the bottom-anchored art */
 @media (max-width: 1400px) {
   .hero__bullets { gap: 13px 18px; max-width: 540px; }
   .hero__bullets li { font-size: 14px; }
@@ -832,7 +815,7 @@ h1, h2, h3, h4, p { margin: 0; }
   .hero__sub { font-size: 14px; }
 }
 
-/* Single-column hero comes EARLIER than the old Tesla layout (860): the video
+/* Single-column hero comes EARLIER than the old art layout (860): the video
    box is an opaque rectangle, so side-by-side needs box-left >= sub-right
    (~696px) — below ~1141 the width formula bottoms out and the art must drop
    under the copy. The title keeps its desktop clamp in 861-1140 (42-56px,
@@ -1154,7 +1137,7 @@ h1, h2, h3, h4, p { margin: 0; }
 @media (max-width: 820px) {
   /* stacked, every other piece (avatar, bubble copy, pill, swash) is centered —
      center the head too so the section reads as one column, matching the
-     rr/dyk mobile treatment */
+     rr mobile treatment */
   .dialed__head { max-width: none; text-align: center; }
   /* title is nowrap by default; at the smallest phones (~≤357px) the 40px floor
      line ("OLD WEBSITE" ≈314px) is wider than the gutters and clips. Let it wrap
@@ -1165,8 +1148,8 @@ h1, h2, h3, h4, p { margin: 0; }
   .dialed__kicker-br { display: none; }
   .dialed__spark { display: none; }
   /* Stacked, the desktop scene (bubble tail → portrait at its right) falls
-     apart: the full illustration's Tesla coil reads as a stray black pipe at
-     phone size. Crop to a circular avatar of the spokesman and hang it over
+     apart: the full illustration reads as stray clutter at phone size.
+     Crop to a circular avatar of the spokesman and hang it over
      the bubble's top edge — image, quote, and CTA become one testimonial
      unit instead of pieces floating in cream. */
   .dialed__wrap { display: flex; flex-direction: column; }
@@ -1413,7 +1396,7 @@ h1, h2, h3, h4, p { margin: 0; }
 /* charcoal page-rip forming the band's top edge — the SAME tear as the hero
    rip over the trusted band (and case-b's cs__rip): asset pre-baked to --dark
    so the tear merges with the dark band, cast shadow rising over the cream
-   DYK band above */
+   band above */
 .tst__rip {
   position: absolute;
   top: 4px;
@@ -1434,8 +1417,9 @@ h1, h2, h3, h4, p { margin: 0; }
   filter: drop-shadow(0 -2px 3px rgba(0,0,0,0.28)) drop-shadow(0 -6px 9px rgba(0,0,0,0.14));
   clip-path: inset(-60px -20px 3px -20px);
 }
-/* "But don't take it from us!" starburst seal — re-homed here when the DYK
-   band (its original home) was folded into the founders intro. Slapped over
+/* "But don't take it from us!" starburst seal — re-homed here when its
+   original home (the removed DID-YOU-KNOW band) was folded into the
+   dialed-in founders intro. Slapped over
    the LAST card's top-right corner like a hand-placed sticker. Direct section
    child at z 4 so it paints over the rip (z 3) and the cards' .container
    (z 1) — the burst sits ON the card's blue border. */
@@ -1554,7 +1538,7 @@ h1, h2, h3, h4, p { margin: 0; }
   display: flex;
   align-items: center;
   /* even the ragged right edge of the centered quotes, matching the page-wide
-     balanced-wrap treatment (hero/dialed-in/rr/dyk). Already orphan-free, so this
+     balanced-wrap treatment (hero/dialed-in/rr). Already orphan-free, so this
      is zero-risk polish; balance only shortens the longest line. */
   text-wrap: balance;
 }
@@ -1594,8 +1578,9 @@ h1, h2, h3, h4, p { margin: 0; }
 .proc__intro { position: relative; padding: 72px 0 56px; }
 .proc__intro-inner { text-align: center; }
 .proc__title {
-  /* poster band headline like .dyk__title/.fcta__title (Anton) — was the
-     Archivo h2 tier, which read undersized/off next to DID YOU KNOW above */
+  /* poster band headline like .dd__title/.fcta__title (Anton) — ratified
+     2026-07-05 (DESIGN.md): the section's giant Anton numerals set the
+     poster voice, and Archivo at h2 breaks the 2-line phone title */
   font-family: var(--f-display);
   font-weight: 400;
   text-transform: uppercase;
@@ -1621,7 +1606,7 @@ h1, h2, h3, h4, p { margin: 0; }
   display: inline-block;
   margin-top: 16px;
   font-size: var(--fs-lead);
-  line-height: 1.35;   /* lead leading like .dialed__body/.dyk__sub (body's 1.5 leaked in) */
+  line-height: 1.35;   /* lead leading like .dialed__body (body's 1.5 leaked in) */
   color: var(--ink);
   font-weight: 500;
   text-wrap: pretty;   /* no stranded "in 14 days." on mid widths */
@@ -2727,12 +2712,11 @@ h1, h2, h3, h4, p { margin: 0; }
      of the columns reading as ripped off with the page. */
 }
 @media (max-width: 880px) {
-  /* long JS-set pill label + nav link collide with the wordmark below ~880:
-     let the bar wrap to two rows instead of jamming together */
+  /* keep the bar wrappable below ~880 so the nav never jams the wordmark
+     (mostly inert now the topbar is wordmark + one link) */
   .topbar__inner { flex-wrap: wrap; gap: 6px 18px; padding-bottom: 12px; }
   .topbar__nav { gap: 16px; margin-left: auto; }
   .topbar__link { font-size: 12px; white-space: nowrap; }
-  .topbar__nav .pill { font-size: 12px; padding: 8px 16px; }
 }
 /* Mobile compaction. Gated at ≤768 (NOT ≤480) — this is the breakpoint where
    the blueprint side borders and the wide gutters collapse, so the topbar +
@@ -2763,7 +2747,7 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 
 /* ===== HORMOZI REBUILD (hero offer headline, spot meter, receipts band,
-   value-stack offer, guarantee stack, founders card, final-cta recap) ===== */
+   value-stack offer, guarantee stack, final-cta recap) ===== */
 
 /* hero: offer headline runs longer than the old 3-word lines — size down a notch.
    Cap at the 4.3vw value for 1920 (was 62px = the 1440 value): the copy and the
@@ -2777,8 +2761,8 @@ h1, h2, h3, h4, p { margin: 0; }
    the taller rip swallow the hero__why line */
 .hero:has(.hero__why) { padding-bottom: calc(10.88vw + 96px); }
 /* at phone width the art now sits BELOW the copy, tucked into the bottom rip:
-   trim the bottom padding so Tesla's lower edge meets the tear (like desktop)
-   instead of leaving a cream gap above it */
+   trim the bottom padding so the art's lower edge meets the tear (like
+   desktop) instead of leaving a cream gap above it */
 @media (max-width: 640px) {
   .hero:has(.hero__why) { padding-bottom: 36px; }
   /* the 36px padding moves the video box relative to the hero bottom, so the
@@ -2859,26 +2843,6 @@ h1, h2, h3, h4, p { margin: 0; }
   color: #fff;
   font-weight: 700;
 }
-
-/* founders card (replaces testimonial cards) */
-.tcard--founders {
-  aspect-ratio: auto;
-  max-width: 860px;
-  margin: 0 auto;
-  padding: 44px 56px 36px;
-}
-.founders__title {
-  font-family: var(--f-head);
-  font-weight: 400;
-  text-transform: uppercase;
-  font-size: clamp(28px, 3.4vw, 44px);
-  color: #fff;
-  margin-bottom: 18px;
-}
-.founders__body { flex: 0 0 auto; font-size: 17px; }
-.founders__body + .founders__body { margin-top: 14px; }
-.tcard--founders .tcard__stars { color: var(--volt-blue-bright); font-size: 28px; margin-bottom: 14px; }
-.tcard--founders .tcard__brand { margin-top: 26px; letter-spacing: 0.1em; font-size: 15px; }
 
 /* ===== THE OFFER (value stack) ===== */
 .offer { padding: 26px 0 0; } /* no bottom gap: the receipt sinks into the data-driven tear */
