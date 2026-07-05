@@ -1223,167 +1223,10 @@ h1, h2, h3, h4, p { margin: 0; }
   transform: rotate(-1.2deg);
 }
 
-/* ===== DID YOU KNOW (§6) ===== */
-/* centered stack (pill / one-line title / 2-line sub); hand anchored
-   bleeding off the bottom-left, sticker overlapping right of the copy */
-.did-you-know { padding: 46px 0 max(60px, 12.5vw); overflow: hidden; }  /* bottom pad tracks the testimonials page-rip overhang (~11.3vw of viewport, uncapped) so its scraps overlap blank cream, not copy */
-/* the mockup composes this band border-to-border (bulb hugging the left
-   blueprint column, sticker overhanging toward the right one), so the
-   container tracks the borders instead of the centered 1400px box on wide
-   screens — same move as the hero. Copy stays on true page center via the
-   equal flexible side tracks below. */
-.did-you-know .container { max-width: none; }
-.dyk__grid {
-  display: grid;
-  /* equal flexible side tracks keep the copy on the true page center —
-     auto sides skewed it right (200px art vs ~140px sticker) */
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: center;
-  gap: 28px;
-  position: relative;
-}
-.dyk__art { width: 200px; justify-self: start; align-self: stretch; position: relative; }
-.dyk__art img {
-  position: absolute;
-  left: -150px;
-  /* WIDTH-driven at the reference-ad proportion (bulb glass ≈ 12.5% of the
-     canvas → whole art ≈ 30vw, glass left edge tucked ~2% off the canvas
-     edge): sized so the bulb TIP rides near the band top, level with the
-     pill, like the reference composition. The opaque glass stays left of
-     the centered headline; only the sparse lightning scribbles approach
-     "DID", same as the reference.
-     BOTTOM-anchored so the hand cuff stays buried under the testimonials
-     tear. The bleed grows steeper than the art (37vw slope) because the
-     band height stops tracking the art's 30.3vw growth past ~1280 — the
-     extra art height has to sink below the band (hidden under the tear,
-     arm running into the torn edge like the ad) so the bulb TIP stays
-     pinned ~45px below the band top instead of poking above it */
-  bottom: calc(-1 * clamp(60px, 37vw - 380px, 410px));
-  width: min(30.3vw, 582px);
-  height: auto;
-  max-width: none;
-}
-.dyk__copy { text-align: center; }
-/* mockup type scale: pill text caps ~1.4% of canvas, headline caps ~7%,
-   sub caps ~2% — all tracked as vw so the section keeps the ad-graphic scale */
-.dyk__pill {
-  margin: 0 auto 24px;
-  font-size: clamp(15px, 1.9vw, 27px);
-  letter-spacing: 0.08em;
-  padding: 13px 30px;
-}
-.dyk__title {
-  font-family: var(--f-display);
-  font-weight: 400;
-  text-transform: uppercase;
-  font-size: clamp(54px, 8.1vw, 118px);
-  letter-spacing: 0.01em;
-  line-height: 1;
-  color: var(--ink);
-  white-space: nowrap;
-}
-.dyk__sub {
-  font-size: clamp(20px, 3vw, 42px);
-  font-weight: 500;
-  line-height: 1.35;
-  margin-top: 14px;
-  color: #232321;
-  /* cap the line length so the centered copy stays clear of the bulb art
-     (left bleed) and the starburst sticker (right overhang). The center grid
-     track sizes to the nowrap title (~768px@1280, ~840px@1440), and 31ch
-     resolves to ≈ that full track width — so the sub's long lines filled the
-     whole box and ran ~158px under the bulb / ~82px under the sticker at
-     1280–1440 (the shorter title glyphs cleared, the sub didn't). The 34vw
-     term binds at the squeezed mid widths to hold the lines inside the
-     bulb→sticker clear zone; the 31ch cap still governs ≥~1900 where the
-     bulb is proportionally small and the reference-width composition clears. */
-  max-width: min(31ch, 34vw);
-  margin-left: auto;
-  margin-right: auto;
-  /* even the line lengths so the last line isn't a lone orphan ("brands." at 390).
-     balance only shortens the longest line, so it can't push copy wider under the
-     bulb/sticker clear zone the max-width above protects. */
-  text-wrap: balance;
-}
-.dyk__blue { color: var(--volt-blue-bright); font-weight: 600; }
-/* starburst sticker badge (jagged seal) */
-.dyk__sticker {
-  flex: 0 0 auto;
-  justify-self: end;
-  align-self: center;
-  /* mockup: sticker rides low-right of the copy — center ~37px below the
-     sub's last line, left spikes ~29px clear of "increase", right edge
-     overhanging the container toward the viewport edge */
-  margin-top: 264px;  /* +24 vs the original 240 — the sub copy runs a line taller at its bigger scale */
-  margin-right: -72px;
-  /* svg viewBox carries 15-unit padding for the die-cut margin (230 units vs
-     the 200-unit burst), so the box is upsized 230/200 to keep the blue burst
-     at the mockup's size */
-  width: clamp(172px, 17.8vw, 298px); height: clamp(172px, 17.8vw, 298px);
-  display: flex; align-items: center; justify-content: center;
-  text-align: center;
-  /* warm white, matching the reference sticker's cream die-cut edge */
-  color: #f7f1e4;
-  background: url("assets/sticker-burst.svg") center/contain no-repeat;
-  /* reference sets the sticker square; keep just a hair of tilt so it reads
-     hand-placed against the straight copy above it */
-  transform: rotate(-4deg);
-  filter: drop-shadow(0 5px 8px rgba(20, 20, 20, 0.25));
-  position: relative;
-  /* mockup sets the sticker in sentence-case medium grotesque, not condensed caps */
-  font-family: var(--f-body);
-  font-weight: 600;
-  font-size: clamp(20px, 2.1vw, 30px);
-  line-height: 1.14;
-  letter-spacing: 0;
-}
-.dyk__sticker > span { position: relative; z-index: 1; padding: 0 6px; }
 @media (max-width: 880px) {
-  .dyk__grid { grid-template-columns: 1fr; justify-items: center; gap: 18px; }
-  .dyk__art { display: none; }
-  /* stacked: drop the sticker out of the cream band entirely — it sits in
-     the black testimonials gap below the tear, overlapping the first card's
-     top-right corner like a slapped-on seal. Absolute (not flow) so the
-     cream band doesn't keep an empty row where it used to be. The section
-     must un-hide overflow (safe here: the bulb art, the reason for the
-     clip, is display:none at this width), and the container needs z-index 2
-     because the testimonials .container is also z-index:1 and later in the
-     DOM — at equal z it would paint the card over the sticker. */
-  /* stacked: the desktop paddings (72px rr bottom + 46px dyk top) stack into
-     ~118px of dead cream between the phone marquee and the headline — cut it
-     to ~60px so the headline reads as the next beat, not a new page */
+  /* stacked: trim the marquee's 72px bottom pad so the testimonials tear
+     reads as the next beat, not a new page */
   .real-results { padding-bottom: 40px; }
-  .did-you-know { overflow: visible; padding-top: 20px; }
-  .did-you-know .container { z-index: 2; }
-  /* stacked: CTA reads better after the pitch — flip it below the sub copy
-     (desktop keeps the reference-ad order: pill above the headline) */
-  .dyk__copy { display: flex; flex-direction: column; }
-  .dyk__pill { order: 3; margin: 26px auto 0; }
-  .dyk__sticker {
-    position: absolute;
-    /* ride off the right screen edge a touch — die-cut spikes clip, the
-       text stays inside (badge text spans ~±55px of the 156px box center) */
-    right: -26px;
-    /* sink past the section's bottom padding + the testimonials' top
-       padding (see below) + 68px of card overlap — deep enough to sit on
-       the card's top-right corner, but the burst's ink (spike radius ~78px
-       of the 90px half-box) still ends above the quote's first line and
-       clears the centered star row's right end by ~20px */
-    bottom: calc(-1 * (max(60px, 12.5vw) + 11.5vw + 138px));
-    width: 156px; height: 156px;
-    margin: 0;
-    font-size: 19px;
-    transform: rotate(10deg);
-  }
-  /* stacked: the ad-graphic vw scale bottoms out way above every other mobile
-     heading (54px floor vs the hero's 38px) — re-floor to the hero tier so the
-     band stops out-shouting the page */
-  .dyk__title { white-space: normal; font-size: clamp(38px, 10.3vw, 54px); }
-  /* stacked: the bulb art is hidden, so drop the 34vw clear-zone cap (which
-     would over-squeeze the column, ~127px at 375) and let the copy use the
-     full readable measure again. Sub drops from the 20px ad floor to the
-     lead tier (16px on phones) so the heading:body ratio matches the hero. */
-  .dyk__sub { max-width: 31ch; font-size: var(--fs-lead); margin-top: 10px; }
 }
 
 /* ===== TESTIMONIALS (§7) ===== */
@@ -1391,9 +1234,9 @@ h1, h2, h3, h4, p { margin: 0; }
    centered quote, brand pinned at the bottom (matches mockup) */
 .testimonials { padding: 104px 0 112px; background-image: none; }  /* no .dark-bg grid lines here */
 @media (max-width: 880px) {
-  /* deepen the black shelf under the tear so the DYK badge (156px, sunk in
-     from the section above) clears the torn cream edge (~11.5vw of rip) and
-     only kisses the first card's corner */
+  /* deepen the black shelf under the tear so the .tst__sticker badge (156px)
+     clears the torn cream edge (~11.5vw of rip) and only kisses the first
+     card's corner */
   .testimonials { padding-top: calc(70px + 11.5vw); }
 }
 /* charcoal page-rip forming the band's top edge — the SAME tear as the hero
@@ -1419,6 +1262,66 @@ h1, h2, h3, h4, p { margin: 0; }
      buried inside the dark band) */
   filter: drop-shadow(0 -2px 3px rgba(0,0,0,0.28)) drop-shadow(0 -6px 9px rgba(0,0,0,0.14));
   clip-path: inset(-60px -20px 3px -20px);
+}
+/* "But don't take it from us!" starburst seal — re-homed here when the DYK
+   band (its original home) was folded into the founders intro. Slapped over
+   the charcoal tear at the band's top-right like a hand-placed sticker; the
+   right spikes overhang the viewport edge (html overflow-x:clip crops them
+   like a die-cut running off the page). Direct section child at z 4 so it
+   paints over the rip (z 3) and the cards' .container (z 1). */
+.tst__sticker {
+  position: absolute;
+  z-index: 4;
+  /* straddle the tear (~10.9vw tall) but never float free of the band: the
+     -120px floor keeps the burst's bottom third in the black shelf above the
+     cards (104px top pad) on wide screens */
+  top: clamp(-120px, -9vw, -60px);
+  /* section-relative (full-bleed), not container-relative like the old DYK
+     placement — the overhang is the literal off-viewport distance. Only the
+     spike tips clip: at -40px the text ink itself ran ~27px off-screen at
+     1440 (badge-shot), so just kiss the edge */
+  right: -10px;
+  width: clamp(160px, 15vw, 208px); height: clamp(160px, 15vw, 208px);
+  display: flex; align-items: center; justify-content: center;
+  text-align: center;
+  /* warm white, matching the reference sticker's cream die-cut edge */
+  color: #f7f1e4;
+  background: url("assets/sticker-burst.svg") center/contain no-repeat;
+  transform: rotate(-4deg);
+  filter: drop-shadow(0 5px 8px rgba(20, 20, 20, 0.25));
+  /* sentence-case medium grotesque, not condensed caps (per the mockup) */
+  font-family: var(--f-body);
+  font-weight: 600;
+  font-size: clamp(19px, 1.75vw, 24px);
+  line-height: 1.14;
+  letter-spacing: 0;
+  pointer-events: none;
+}
+.tst__sticker > span {
+  position: relative;
+  z-index: 1;
+  padding: 0 6px;
+  /* hold the wrap to ~3 short lines so the ink stays on the blue disc
+     (~65% of the box; the die-cut spikes eat the rest) instead of running
+     across the cream spikes — "from&nbsp;us!" in the markup keeps the last
+     line from stranding "us!" alone */
+  max-width: 62%;
+}
+@media (max-width: 880px) {
+  /* stacked: the original (verified) mobile geometry — sunk below the torn
+     cream edge into the black shelf (the section's 70px + 11.5vw top pad),
+     overlapping the first card's top-right corner by ~68px; the burst's ink
+     (spike radius ~78px of the 90px half-box) ends above the quote's first
+     line and clears the centered star row's right end by ~20px */
+  .tst__sticker {
+    top: calc(11.5vw - 18px);
+    /* -2px here = the old container-relative -26px (24px gutter): spikes kiss
+       the edge, the text ink stays ~1px inside the viewport at 375 */
+    right: -2px;
+    width: 156px; height: 156px;
+    font-size: 19px;
+    transform: rotate(10deg);
+  }
 }
 .tst__wrap {
   display: flex;
