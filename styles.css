@@ -1401,12 +1401,12 @@ h1, h2, h3, h4, p { margin: 0; }
 /* ===== TESTIMONIALS (§7) ===== */
 /* tall portrait cards (h/w ≈ 1.7) filling a deep band, white stars,
    centered quote, brand pinned at the bottom (matches mockup) */
-.testimonials { padding: 56px 0 168px; background-image: none; }  /* no .dark-bg grid lines here */
+.testimonials { padding: 16px 0 168px; background-image: none; }  /* no .dark-bg grid lines here */
 @media (max-width: 880px) {
-  /* deepen the black shelf under the tear so the .tst__sticker badge (156px)
-     clears the torn cream edge (~11.5vw of rip) and only kisses the first
-     card's corner */
-  .testimonials { padding-top: calc(70px + 11.5vw); }
+  /* stacked: the 11.5vw term keeps tracking the rip height so the cards sit
+     just under the tear's dark underside; the sticker rides up over the tear
+     ink instead of demanding a deep shelf (user-approved overlap) */
+  .testimonials { padding-top: calc(28px + 11.5vw); }
 }
 /* charcoal page-rip forming the band's top edge — the SAME tear as the hero
    rip over the trusted band (and case-b's cs__rip): asset pre-baked to --dark
@@ -1444,11 +1444,12 @@ h1, h2, h3, h4, p { margin: 0; }
   /* center the burst on the card's top-right corner, biased up-right (16px
      over, 26px up) so the spike tips clear the star row / quote ink at 900px
      where the card is narrowest.
-     Corner-y = section pad (56 — the heading that used to sit above the
-     cards now lives in the cream band, so the cards lead the section);
+     Corner-y = section pad (16 — the heading that used to sit above the
+     cards now lives in the cream band, so the cards lead the section; the
+     burst's top spikes ride over the tear ink — user-approved overlap);
      corner-x (from the right) = centered container edge + --pad
      + next arrow (~31px) + the wrap's 24px gap */
-  top: calc(56px - var(--stk) / 2 - 26px);
+  top: calc(16px - var(--stk) / 2 - 26px);
   right: calc((100% - min(var(--maxw), 100%)) / 2 + var(--pad) + 55px - var(--stk) / 2 - 16px);
   width: var(--stk); height: var(--stk);
   display: flex; align-items: center; justify-content: center;
@@ -1479,13 +1480,14 @@ h1, h2, h3, h4, p { margin: 0; }
   max-width: 62%;
 }
 @media (max-width: 880px) {
-  /* stacked: the original (verified) mobile geometry — sunk below the torn
-     cream edge into the black shelf (the section's 70px + 11.5vw top pad),
-     overlapping the first card's top-right corner by ~68px; the burst's ink
-     (spike radius ~78px of the 90px half-box) ends above the quote's first
-     line and clears the centered star row's right end by ~20px */
+  /* stacked: rides UP over the tear ink now that the black shelf is shallow
+     (section pad 28px + 11.5vw) — the -60px term tracks the pad reduction
+     (was -18px at a 70px pad) so the burst still overlaps the first card's
+     top-right corner by ~68px; the burst's ink (spike radius ~78px of the
+     90px half-box) ends above the quote's first line and clears the centered
+     star row's right end by ~20px */
   .tst__sticker {
-    top: calc(11.5vw - 18px);
+    top: calc(11.5vw - 60px);
     /* ride off the screen edge — the die-cut spikes clip, but the text ink
        (held to the blue disc by the span's max-width) stays ~5px inside the
        viewport at 375 */
