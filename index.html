@@ -101,8 +101,11 @@
              paints flat --paper behind the video so mix-blend-mode: multiply
              (on the video) knocks the clip's white background out to exact
              page cream — .hero__grid is an isolated stacking context, so the
-             video can't blend against the body directly. JS in main.js slides
-             the box up from behind the rip, then plays once. -->
+             video can't blend against the body directly. The box overlaps the
+             right blueprint column (arm prints over it): its ::before repaints
+             the column slice into the multiply backdrop. JS in main.js slides
+             the video layers up from behind the rip (the box and its column
+             repaint stay put), then plays once. -->
         <div class="hero__vidbox" data-hero-anim aria-hidden="true">
           <video class="hero__vid" muted playsinline preload="metadata"
                  poster="assets/hero-anim-poster.jpg" width="736" height="1232">

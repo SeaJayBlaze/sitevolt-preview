@@ -694,16 +694,25 @@ h1, h2, h3, h4, p { margin: 0; }
   right: calc(-1 * var(--pad-hero));  /* right edge flush with the viewport
      edge: the frame cuts the sleeve at its right border, so the cut must sit
      off-page, and the overlapped column is repainted by ::before below */
-  bottom: -130px;        /* sleeve bottom clipped by the torn rip (z 4) */
+  /* sleeve TORN OFF by the rip: the clip's arm ends in a straight diagonal
+     cut (asset underside runs to the frame's bottom-right corner), so the
+     cut must sit BELOW the rip's ink top edge or a cream gap opens between
+     the arm and the tear. Rip ink top sits ~82% of the 10.88vw rip height
+     above the hero bottom and the cut spans ~0.19*width vertically, so a
+     fixed -130px only tucked it at narrow viewports — sink proportionally:
+     box bottom lands (10.88vw + 96px) - (28px + 12.2vw) = 68px - 1.32vw
+     above the hero bottom, deep enough that the cut drowns in the ink. */
+  bottom: calc(-28px - 12.2vw);
   /* portrait clip (480x816). The box is OPAQUE (white knocks to flat cream),
      so unlike the transparent Tesla webp it must clear the copy entirely:
-     - height: bottom anchor is y~918 and the headline's underline scribble
-       ends at y~352, so height caps at 566 -> width caps at 366 (48/74);
-       wider slices the "ONLY $1" underline tail off.
-     - left edge: the sub block ends at pad-hero + 540 = ~676-696px, so
-       width also caps at 100vw - 850 (right edge is ~vw-114..154, +20 gap).
+     - height: with the deeper bottom anchor above, the top stays clear of
+       the "ONLY $1" underline tail up to ~430 wide (48/74);
+     - left edge: headline line 2 ink ("14 DAYS FOR ONLY $1" + underline)
+       ends at ~176px + 51.2vw = 831px at 1280, so the box-left floor of
+       100vw - width must stay right of it: width caps at 100vw - 860
+       (~28px clearance at the 1280 pinch point where the cap takes over).
      Below ~1141 nothing sensible fits — the hero stacks (media block). */
-  width: clamp(330px, calc(100vw - 850px), 366px);
+  width: clamp(330px, calc(100vw - 860px), 430px);
   /* crop the clip's empty white top ~9% (phone top sits at 13% of frame) */
   aspect-ratio: 48 / 74;
   overflow: hidden;
@@ -712,10 +721,10 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 /* the column slice the box overlaps, repainted as part of the multiply
    backdrop so the arm prints OVER the blueprint. Phase counts from the hero's
-   bottom edge like .hero::after: box bottom sits 10.88vw - 34px above the
-   hero bottom (padding-bottom 10.88vw + 96px, bottom -130px), so anchoring
-   the tile 10.88vw - 34px below the box bottom lands it exactly on the hero
-   bottom — real and repainted columns tile in the same phase. */
+   bottom edge like .hero::after: box bottom sits 68px - 1.32vw above the
+   hero bottom (padding-bottom 10.88vw + 96px, bottom -(28px + 12.2vw)), so
+   anchoring the tile 68px - 1.32vw below the box bottom lands it exactly on
+   the hero bottom — real and repainted columns tile in the same phase. */
 .hero__vidbox::before {
   content: "";
   position: absolute;
@@ -725,7 +734,7 @@ h1, h2, h3, h4, p { margin: 0; }
   background-image: url("assets/blueprint-border-right.webp");
   background-repeat: repeat-y;
   background-size: auto var(--tile-h);
-  background-position: right bottom calc(34px - 10.88vw);
+  background-position: right bottom calc(1.32vw - 68px);
 }
 /* entrance: JS (data-hero-anim) sinks the MEDIA 110px with .is-prep, then
    .is-in rises it from behind the torn rip; then the clip plays once. The
@@ -738,12 +747,15 @@ h1, h2, h3, h4, p { margin: 0; }
 .hero__vidbox.is-in .hero__vidend { transform: translateY(0); }
 /* Wide screens: past ~1520 the box clears the headline HORIZONTALLY, so it
    may rise beside it and the height cap no longer binds — the frame's top is
-   empty white anyway and the hero's overflow:hidden clips whatever pokes past
-   the top. Headline ink keeps growing to the 83px --fs-h1 cap (~1930), so the
+   empty white anyway and the hero's overflow clips whatever pokes past the
+   top. Headline ink keeps growing to the 83px --fs-h1 cap (~1930), so the
    width must track it: ink right ~= 176px + 11.9em x 4.3vw = 176 + 51.2vw;
-   box right edge = 100vw - 154, minus a 20px+ gap => width <= 48.8vw - 370. */
+   box right edge is flush at 100vw and the phone's left ink sits ~6.8% into
+   the frame, so copy->phone gap = 48.8vw - 176 - 0.932*width. Sized for a
+   ~165px gap (the old 48.8vw - 370 cap left ~280px of dead cream between
+   the "$1" underline and the phone): width = 52.4vw - 366. */
 @media (min-width: 1520px) {
-  .hero__vidbox { width: clamp(370px, calc(48.8vw - 370px), 500px); }
+  .hero__vidbox { width: clamp(430px, calc(52.4vw - 366px), 660px); }
 }
 .hero__vid {
   display: block;
@@ -841,19 +853,25 @@ h1, h2, h3, h4, p { margin: 0; }
          container's full pad-hero), sleeve over the blueprint column with
          the cut off-page; ::before repaints the overlapped column slice;
        - bottom sunk into the torn rip: hero padding-bottom is
-         10.88vw + 96px and the rip is 10.88vw tall, so -140px puts the
-         sleeve ~44px below the rip's top edge at every stacked width —
-         the tear clips the arm exactly like desktop. */
-    margin: 24px calc(-1 * var(--pad-hero)) -140px auto;
+         10.88vw + 96px, the rip's INK top edge sits ~82% of its 10.88vw
+         height above the hero bottom, and the sleeve's straight-cut
+         underside spans ~0.19*width vertically — a flat -140px left that
+         cut hanging in cream above the tear at 700-1140. -(162px + 2vw)
+         puts the box bottom 8.88vw - 66px above the hero bottom, deep
+         enough that the cut drowns below the ink line at every stacked
+         width (below ~745 the box pokes past the hero bottom itself;
+         overflow:clip buries the spill behind the opaque rip). */
+    margin: 24px calc(-1 * var(--pad-hero)) calc(-162px - 2vw) auto;
     /* crop a touch harder when stacked (~10.6% off the top vs 9%): flow
        height matters here. Phone top edge sits at ~13% of the frame — don't
        go past 48/72 or the bezel clips */
     aspect-ratio: 48 / 73;
   }
-  /* stacked column-repaint phase: box bottom = hero content bottom + 140px
-     (negative margin) = hero bottom - (10.88vw + 96px) + 140px, so the hero
-     bottom sits 10.88vw - 44px below the box bottom */
-  .hero__vidbox::before { background-position: right bottom calc(44px - 10.88vw); }
+  /* stacked column-repaint phase: box bottom = hero content bottom +
+     (162px + 2vw) (negative margin) = hero bottom - (10.88vw + 96px) +
+     162px + 2vw, so the hero bottom sits 8.88vw - 66px below the box
+     bottom */
+  .hero__vidbox::before { background-position: right bottom calc(66px - 8.88vw); }
   /* the CTA arrow points at the pill FROM the art's gap; in single column
      it has no referent and strands in dead space to the pill's right */
   .hero__arrow { display: none; }
@@ -1383,7 +1401,7 @@ h1, h2, h3, h4, p { margin: 0; }
 /* ===== TESTIMONIALS (§7) ===== */
 /* tall portrait cards (h/w ≈ 1.7) filling a deep band, white stars,
    centered quote, brand pinned at the bottom (matches mockup) */
-.testimonials { padding: 104px 0 112px; background-image: none; }  /* no .dark-bg grid lines here */
+.testimonials { padding: 56px 0 168px; background-image: none; }  /* no .dark-bg grid lines here */
 @media (max-width: 880px) {
   /* deepen the black shelf under the tear so the .tst__sticker badge (156px)
      clears the torn cream edge (~11.5vw of rip) and only kisses the first
@@ -1426,11 +1444,11 @@ h1, h2, h3, h4, p { margin: 0; }
   /* center the burst on the card's top-right corner, biased up-right (16px
      over, 26px up) so the spike tips clear the star row / quote ink at 900px
      where the card is narrowest.
-     Corner-y = section pad (104 — the heading that used to sit above the
+     Corner-y = section pad (56 — the heading that used to sit above the
      cards now lives in the cream band, so the cards lead the section);
      corner-x (from the right) = centered container edge + --pad
      + next arrow (~31px) + the wrap's 24px gap */
-  top: calc(104px - var(--stk) / 2 - 26px);
+  top: calc(56px - var(--stk) / 2 - 26px);
   right: calc((100% - min(var(--maxw), 100%)) / 2 + var(--pad) + 55px - var(--stk) / 2 - 16px);
   width: var(--stk); height: var(--stk);
   display: flex; align-items: center; justify-content: center;
