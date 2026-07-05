@@ -3285,6 +3285,12 @@ h1, h2, h3, h4, p { margin: 0; }
        would push it off-screen instead */
     right: 10px;
   }
+  /* the absolutely-positioned portrait outgrows the capped copy column past
+     ~1520 and hangs into the real-results title. Grow the wrap with the art:
+     art top + art height (width × 885/914) − the 120px section padding the
+     art bottom is allowed to hang into (its exact position at 1440), keeping
+     the title 30px clear of the portrait at every width */
+  .dialed__wrap { min-height: calc(clamp(36px, 5.5vw, 106px) + clamp(580px, calc(44vw - 54px), 791px) * 0.9683 - 120px); }
   /* the head/bubble are %-of-container — freeze them at their 1920 widths
      (60% / 57% of the 1568px content box) so they stop growing with the
      viewport once the type freezes */
