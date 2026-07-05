@@ -2450,6 +2450,50 @@ h1, h2, h3, h4, p { margin: 0; }
   display: grid;
   align-items: center;
 }
+/* blueprint side columns framing the cream ribbon, like every other cream
+   band. The ribbon's own pseudos are taken by the torn strips (z 3), and the
+   strips paint opaque (cream scan over dark fill), so the columns sit ABOVE
+   them (z 4) spanning the full ribbon box and are masked to the cream shape:
+   tear-scan alpha at top and bottom (visible where cream), solid in between —
+   the columns rip along both tear contours. */
+.fcta__bp {
+  position: absolute;
+  top: -1px; bottom: -1px;   /* match the strips' -1px seam overlap */
+  left: 0; right: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+.fcta__bp::before,
+.fcta__bp::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0;
+  width: var(--border-w);
+  background-repeat: repeat-y;
+  background-size: auto var(--tile-h);
+  /* strips size their scans 100% x torn-h over the full-bleed ribbon; the
+     masks span 100vw the same way, each pseudo seeing its local slice */
+  -webkit-mask-image: url("assets/torn-cream-paper-flipped.png"), linear-gradient(#000, #000), url("assets/torn-cream-paper.png");
+  mask-image: url("assets/torn-cream-paper-flipped.png"), linear-gradient(#000, #000), url("assets/torn-cream-paper.png");
+  -webkit-mask-size: 100vw var(--torn-h), 100% calc(100% - 2 * var(--torn-h) + 2px), 100vw var(--torn-h);
+  mask-size: 100vw var(--torn-h), 100% calc(100% - 2 * var(--torn-h) + 2px), 100vw var(--torn-h);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+.fcta__bp::before {
+  left: 0;
+  background-image: url("assets/blueprint-border-left.webp");
+  background-position: left top;
+  -webkit-mask-position: left top, left calc(var(--torn-h) - 1px), left bottom;
+  mask-position: left top, left calc(var(--torn-h) - 1px), left bottom;
+}
+.fcta__bp::after {
+  right: 0;
+  background-image: url("assets/blueprint-border-right.webp");
+  background-position: right top;
+  -webkit-mask-position: right top, right calc(var(--torn-h) - 1px), right bottom;
+  mask-position: right top, right calc(var(--torn-h) - 1px), right bottom;
+}
 /* big collage hands pinned to the viewport edges (ribbon is full-bleed):
    wrists run off-page (negative translateX crops the cutout outline) and the
    fists hang below the ribbon onto the black, per the reference comp */
