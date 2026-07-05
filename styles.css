@@ -1070,9 +1070,9 @@ h1, h2, h3, h4, p { margin: 0; }
 
 /* ===== REAL RESULTS (§5) ===== */
 /* bottom padding tracks the testimonials rip height (300/2758 ≈ 10.9vw, it
-   rises over this band now that did-you-know is gone) so the tear kisses the
-   phone bottoms instead of slicing through the bezels at wide widths */
-.real-results { padding: 30px 0 calc(10.9vw - 12px); }
+   rises over this band now that did-you-know is gone) plus a 16px cream shelf
+   so the tear clears the phone bottoms instead of slicing through the bezels */
+.real-results { padding: 30px 0 calc(10.9vw + 16px); }
 /* the container only holds the centered title now — the phones marquee is a
    full-bleed sibling; padding just keeps the title clear of the columns */
 .real-results > .container { padding: 0 calc(var(--border-w) - 24px); }
@@ -1103,8 +1103,10 @@ h1, h2, h3, h4, p { margin: 0; }
    RESULTS.", ~11.2em ink) inside the --pad-hero gutters down to ~360px. */
 @media (max-width: 820px) { .rr__title { font-size: clamp(26px, 7.2vw, 34px); } }
 /* hand-drawn blue underline under a word — same treatment as "DIALED IN.",
-   long stroke + shorter second scribble beneath, as in the banner ref */
-.rr__ul {
+   long stroke + shorter second scribble beneath, as in the banner ref
+   (.tst__ul reuses it under the testimonials heading's "WE KNOW.") */
+.rr__ul,
+.tst__ul {
   white-space: nowrap;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 22' preserveAspectRatio='none'%3E%3Cpath d='M4 6 C60 2 140 3 196 5' fill='none' stroke='%232f6bff' stroke-width='4.5' stroke-linecap='round'/%3E%3Cpath d='M28 15 C90 11 150 12 180 13' fill='none' stroke='%232f6bff' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -1224,9 +1226,9 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 
 @media (max-width: 880px) {
-  /* stacked: trim the marquee's 72px bottom pad so the testimonials tear
-     reads as the next beat, not a new page */
-  .real-results { padding-bottom: 40px; }
+  /* stacked: a clear cream shelf under the phone bottoms before the
+     testimonials tear bites in (the tear was kissing the bezels) */
+  .real-results { padding-bottom: 72px; }
 }
 
 /* ===== TESTIMONIALS (§7) ===== */
@@ -1322,6 +1324,32 @@ h1, h2, h3, h4, p { margin: 0; }
     width: 156px; height: 156px;
     font-size: 19px;
     transform: rotate(10deg);
+  }
+}
+/* "BIG TALK. WE KNOW." hand-off heading in the black shelf above the cards —
+   it owns the brag the results band just made, so the starburst's "But don't
+   take it from us!" reads as the rebuttal that tees up the client cards */
+.tst__title {
+  text-align: center;
+  font-family: var(--f-head);
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: var(--fs-h3);
+  line-height: 1.05;
+  letter-spacing: 0.005em;
+  color: var(--paper);
+  margin-bottom: 44px;
+}
+@media (max-width: 880px) {
+  /* stacked: the sticker rides the band's top-right, so the heading locks up
+     beside it on the left — the right pad clears the sticker box (156px wide,
+     -26px overhang → its spikes start ~182px in from the right edge) and
+     forces the two sentences onto their own lines */
+  .tst__title {
+    text-align: left;
+    font-size: clamp(22px, 6vw, 30px);
+    padding-right: 150px;
+    margin-bottom: 30px;
   }
 }
 .tst__wrap {
@@ -2452,10 +2480,25 @@ h1, h2, h3, h4, p { margin: 0; }
   .fcta__hand--r { bottom: -15%; transform: translateX(30%); }
 }
 @media (max-width: 760px) {
+  /* deeper black shelf above the ribbon, none below — the torn bottom hands
+     straight off to the footer */
+  .final-cta { padding: 72px 0 0; }
   /* title spans the full ribbon; hands tuck into the lower corners below it */
   .fcta__ribbon { padding: calc(var(--torn-h, 42px) + 8px) 0 calc(var(--torn-h, 42px) + 56px); }
   .fcta__center { padding: 0 12px; }
   .fcta__title { font-size: 30px; }
+  /* ride the hands up so the fists sit roughly on the "Cancel anytime" line
+     (the ribbon's 98px bottom pad puts that line ~106px above its bottom
+     edge) instead of hanging below the ribbon onto the black */
+  .fcta__hand--l { bottom: 44px; }
+  .fcta__hand--r { bottom: 36px; }
+  /* this high, the spark doodles at the images' tops reach the pill zone at
+     ≤414 — drop the hands below the copy stack (z 4; .fcta__center follows in
+     DOM so it still paints on top) and give the ghost pill the ribbon's own
+     paper fill (invisible change on the flat cream) so the doodles pass
+     BEHIND the button instead of scribbling over it */
+  .fcta__hand { z-index: 4; }
+  .final-cta .pill--ghost { background-color: var(--paper); }
 }
 
 /* ===== FOOTER (§16) ===== */
