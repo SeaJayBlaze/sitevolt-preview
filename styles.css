@@ -1234,12 +1234,12 @@ h1, h2, h3, h4, p { margin: 0; }
 /* ===== TESTIMONIALS (§7) ===== */
 /* tall portrait cards (h/w ≈ 1.7) filling a deep band, white stars,
    centered quote, brand pinned at the bottom (matches mockup) */
-.testimonials { padding: 104px 0 112px; background-image: none; }  /* no .dark-bg grid lines here */
+.testimonials { padding: clamp(64px, 6.5vw, 96px) 0 112px; background-image: none; }  /* no .dark-bg grid lines here */
 @media (max-width: 880px) {
-  /* deepen the black shelf under the tear so the .tst__sticker badge (156px)
-     clears the torn cream edge (~11.5vw of rip) and only kisses the first
-     card's corner */
-  .testimonials { padding-top: calc(70px + 11.5vw); }
+  /* shallow black shelf: the sticker now straddles the tear itself (not the
+     shelf), so the heading only needs to clear the rip (~11.5vw) plus a
+     breath — the old 70px shelf read as dead space beside the badge */
+  .testimonials { padding-top: calc(24px + 11.5vw); }
 }
 /* charcoal page-rip forming the band's top edge — the SAME tear as the hero
    rip over the trusted band (and case-b's cs__rip): asset pre-baked to --dark
@@ -1274,15 +1274,15 @@ h1, h2, h3, h4, p { margin: 0; }
 .tst__sticker {
   position: absolute;
   z-index: 4;
-  /* straddle the tear (~10.9vw tall) but never float free of the band: the
-     -120px floor keeps the burst's bottom third in the black shelf above the
-     cards (104px top pad) on wide screens */
-  top: clamp(-120px, -9vw, -60px);
-  /* section-relative (full-bleed), not container-relative like the old DYK
-     placement — the overhang is the literal off-viewport distance. Only the
-     spike tips clip: at -40px the text ink itself ran ~27px off-screen at
-     1440 (badge-shot), so just kiss the edge */
-  right: -10px;
+  /* straddle the tear (~10.9vw tall) at every width: -9vw keeps the burst's
+     center riding the cream/dark boundary as the rip grows; the -190px floor
+     only bites past ~2100px (the old -120px floor sank the whole burst into
+     the black shelf at 1700+, where it read as floating free of the tear) */
+  top: clamp(-190px, -9vw, -60px);
+  /* section-relative (full-bleed). Fully on-screen: the old -10px overhang
+     die-cut the right spikes at the viewport edge, which read as accidental
+     clipping rather than a placed sticker */
+  right: clamp(16px, 3vw, 56px);
   width: clamp(160px, 15vw, 208px); height: clamp(160px, 15vw, 208px);
   display: flex; align-items: center; justify-content: center;
   text-align: center;
@@ -1310,17 +1310,16 @@ h1, h2, h3, h4, p { margin: 0; }
   max-width: 62%;
 }
 @media (max-width: 880px) {
-  /* stacked: the original (verified) mobile geometry — sunk below the torn
-     cream edge into the black shelf (the section's 70px + 11.5vw top pad),
-     overlapping the first card's top-right corner by ~68px; the burst's ink
-     (spike radius ~78px of the 90px half-box) ends above the quote's first
-     line and clears the centered star row's right end by ~20px */
+  /* stacked: slapped OVER the tear like the desktop placement (the old
+     geometry sank it 11.5vw into the black shelf, where it floated in dead
+     space) — the top spikes ride the torn cream edge, the bottom third sits
+     in the shelf beside the left-locked heading */
   .tst__sticker {
-    top: calc(11.5vw - 18px);
-    /* ride off the screen edge — the die-cut spikes clip, but the text ink
-       (held to the blue disc by the span's max-width) stays ~5px inside the
-       viewport at 375 */
-    right: -26px;
+    /* track the rip height (~10.9vw) so the top spikes ride the torn cream
+       edge at every stacked width, not just phones */
+    top: calc(6px - 10.9vw);
+    /* fully on-screen; the heading's right pad keeps its ink clear */
+    right: 8px;
     width: 156px; height: 156px;
     font-size: 19px;
     transform: rotate(10deg);
@@ -1341,14 +1340,16 @@ h1, h2, h3, h4, p { margin: 0; }
   margin-bottom: 44px;
 }
 @media (max-width: 880px) {
-  /* stacked: the sticker rides the band's top-right, so the heading locks up
-     beside it on the left — the right pad clears the sticker box (156px wide,
-     -26px overhang → its spikes start ~182px in from the right edge) and
-     forces the two sentences onto their own lines */
+  /* stacked: the sticker rides the tear at the band's top-right, so the
+     heading locks up beside/below it on the left — the right pad clears the
+     sticker box (156px + 8px inset + rotation bbox ≈ 188px from the right
+     edge) and forces the two sentences onto their own lines on phones */
   .tst__title {
     text-align: left;
-    font-size: clamp(22px, 6vw, 30px);
-    padding-right: 150px;
+    /* 20px floor + 45vw pad floor: at 320 the 22px floor's "BIG TALK." ink
+       (129px) overflowed the 168px right pad and kissed the badge spikes */
+    font-size: clamp(20px, 6vw, 30px);
+    padding-right: clamp(140px, 45vw, 168px);
     margin-bottom: 30px;
   }
 }
@@ -1356,6 +1357,9 @@ h1, h2, h3, h4, p { margin: 0; }
   display: flex;
   align-items: center;
   gap: 24px;
+  /* keep the card row readable on very wide screens instead of stretching
+     to the full 1400px container */
+  max-width: 1200px;
 }
 .tst__arrow {
   flex: 0 0 auto;
@@ -1371,11 +1375,15 @@ h1, h2, h3, h4, p { margin: 0; }
 .tst__arrow:hover { color: var(--volt-blue); }
 .tst__cards {
   flex: 1;
+  /* flex items default to min-width:auto — without the 0 the grid's
+     min-content width wins and the third card runs off-viewport at ~900px */
+  min-width: 0;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 18px;
 }
 .tcard {
+  min-width: 0;
   border: 2.5px solid rgba(95,130,235,0.85);
   border-radius: 26px;
   background: rgba(255,255,255,0.018);
@@ -1385,7 +1393,10 @@ h1, h2, h3, h4, p { margin: 0; }
   flex-direction: column;
   align-items: center;
   text-align: center;
-  aspect-ratio: 1 / 1.5;
+  /* portrait-leaning cards that stop growing with the viewport — the old
+     1:1.5 aspect-ratio ballooned to ~650px tall at 1920, leaving a huge
+     void between the stars and the centered quote */
+  min-height: clamp(340px, 26vw, 400px);
 }
 .tcard__stars {
   color: #fff;
@@ -1419,12 +1430,15 @@ h1, h2, h3, h4, p { margin: 0; }
 .tcard__brand--vibe { letter-spacing: 0.12em; }
 .tcard__brand--vibe::first-letter { color: #fff; }
 .tcard__brand--dod { font-size: 22px; letter-spacing: 0.16em; }
-@media (max-width: 820px) {
+@media (max-width: 880px) {
+  /* 880 (not 820) so the stack breakpoint matches the sticker/title/padding
+     rules above — the 821–880 band used to get 3 cramped desktop columns
+     against the mobile heading layout */
   .tst__cards { grid-template-columns: 1fr; }
   .tst__arrow { display: none; }
-  /* drop the 1:1.5 portrait ratio on mobile — at full width it forced ~500px
+  /* drop the desktop min-height on mobile — at full width it forced ~340px
      of mostly-empty card; let each card hug its quote instead */
-  .tcard { aspect-ratio: auto; padding: 28px 26px; }
+  .tcard { min-height: 0; padding: 28px 26px; }
   .tcard__stars { margin-bottom: 16px; }
   .tcard__quote { flex: 0 0 auto; }
   .tcard__brand { margin-top: 22px; padding-top: 18px; }
@@ -2730,7 +2744,7 @@ h1, h2, h3, h4, p { margin: 0; }
 
 /* founders card (replaces testimonial cards) */
 .tcard--founders {
-  aspect-ratio: auto;
+  min-height: 0;  /* content-sized, unlike the testimonial cards */
   max-width: 860px;
   margin: 0 auto;
   padding: 44px 56px 36px;
