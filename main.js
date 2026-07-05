@@ -83,12 +83,6 @@ function renderStatic(closed) {
     el.textContent = SPOT_MONTH;
   });
 
-  $$("[data-spot-final]").forEach((el) => {
-    el.textContent = closed
-      ? `${SPOT_MONTH} is full. Next builds start later in ${SPOT_NEXT_MONTH}.`
-      : `${SPOTS_LEFT} spots left in ${SPOT_MONTH}. Then you're waiting till sometime in ${SPOT_NEXT_MONTH}.`;
-  });
-
   // $1 CTAs → Stripe checkout while the month is open; back to their in-page
   // anchors when it closes. (Runs BEFORE data-spot-cta so a closed month's
   // "join the list" #footer link isn't clobbered.)
