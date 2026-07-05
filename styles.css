@@ -1267,27 +1267,30 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 /* "But don't take it from us!" starburst seal — re-homed here when the DYK
    band (its original home) was folded into the founders intro. Slapped over
-   the FIRST card's top-left corner like a hand-placed sticker. Direct section
+   the LAST card's top-right corner like a hand-placed sticker. Direct section
    child at z 4 so it paints over the rip (z 3) and the cards' .container
    (z 1) — the burst sits ON the card's blue border. */
 .tst__sticker {
   position: absolute;
   z-index: 4;
   --stk: clamp(160px, 15vw, 208px);
-  /* center the burst on the card's top-left corner, biased 12px up-left so
-     the spike tips clear the star row / quote ink (verified 900–1920).
+  /* center the burst on the card's top-right corner, biased up-right (16px
+     over, 26px up) so the spike tips clear the star row / quote ink at 900px
+     where the card is narrowest (verified 900–1920).
      Corner-y = section pad (104) + title line box (fs-h3 × 1.05) + its 44px
-     margin; corner-x = centered container edge + --pad + prev arrow (~31px)
-     + the wrap's 24px gap */
-  top: calc(104px + var(--fs-h3) * 1.05 + 44px - var(--stk) / 2 - 12px);
-  left: calc((100% - min(var(--maxw), 100%)) / 2 + var(--pad) + 55px - var(--stk) / 2 - 12px);
+     margin; corner-x (from the right) = centered container edge + --pad
+     + next arrow (~31px) + the wrap's 24px gap */
+  top: calc(104px + var(--fs-h3) * 1.05 + 44px - var(--stk) / 2 - 26px);
+  right: calc((100% - min(var(--maxw), 100%)) / 2 + var(--pad) + 55px - var(--stk) / 2 - 16px);
   width: var(--stk); height: var(--stk);
   display: flex; align-items: center; justify-content: center;
   text-align: center;
   /* warm white, matching the reference sticker's cream die-cut edge */
   color: #f7f1e4;
   background: url("assets/sticker-burst.svg") center/contain no-repeat;
-  transform: rotate(-4deg);
+  /* right-corner placement: tilt clockwise so the sticker leans back toward
+     the heading it's rebutting (mirror of the old left-side -4deg) */
+  transform: rotate(6deg);
   filter: drop-shadow(0 5px 8px rgba(20, 20, 20, 0.25));
   /* sentence-case medium grotesque, not condensed caps (per the mockup) */
   font-family: var(--f-body);
@@ -1317,9 +1320,7 @@ h1, h2, h3, h4, p { margin: 0; }
     top: calc(11.5vw - 18px);
     /* ride off the screen edge — the die-cut spikes clip, but the text ink
        (held to the blue disc by the span's max-width) stays ~5px inside the
-       viewport at 375. left:auto releases the desktop card-corner anchor
-       (left + right together over-constrain and left would win) */
-    left: auto;
+       viewport at 375 */
     right: -26px;
     width: 156px; height: 156px;
     font-size: 19px;
@@ -1372,7 +1373,10 @@ h1, h2, h3, h4, p { margin: 0; }
 .tst__cards {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  /* minmax(0,…): the cards' aspect-ratio transfers their content height into
+     a ~394px min-width, which with plain 1fr overflows the flex row and
+     shoves the next-arrow out of the container — let the tracks shrink */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
 }
 .tcard {
