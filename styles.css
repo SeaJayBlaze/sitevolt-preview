@@ -2135,26 +2135,6 @@ h1, h2, h3, h4, p { margin: 0; }
   margin: 18px auto 0;
   padding-bottom: 56px;
 }
-.fn__callouts-wrap { padding: 10px 0 56px; }
-.fn__callouts {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 26px;
-  max-width: 880px;
-}
-.fn__co {
-  background: #1d1c1a;
-  border: 1px solid rgba(95,130,235,0.7);
-  border-radius: 16px;
-  padding: 22px 24px;
-  color: #fff;
-}
-/* mirrored stagger (mockup: left card high, right card lower) */
-.fn__co:first-child { transform: translateY(-8px); }
-.fn__co:last-child { transform: translateY(8px); }
-.fn__co-quote { font-size: 17.5px; line-height: 1.5; }
-.fn__co-action { margin-top: 12px; font-weight: 700; font-size: 14px; color: #cfe0ff; }
-.fn__arrow { color: var(--volt-blue-bright); font-weight: 700; margin-right: 4px; }
 /* narrow desktop: half the container can't hold the ink half-width plus a
    440px label column, so compact the stack — a shorter bracket span shrinks
    the pinned funnel with it, and both sides regain clearance */
@@ -2223,7 +2203,6 @@ h1, h2, h3, h4, p { margin: 0; }
     .fn__stages li { padding-left: 26px; }
     .fn__stages li::before { width: 12px; }
   }
-  .fn__callouts { grid-template-columns: 1fr; max-width: 460px; }
   /* title: the desktop-tuned <br> (after "TURNS") forces a ragged 4-line stack with
      "TURNS" and "CUSTOMERS" orphaned on mobile. Drop it on phone so the single run
      flows and balance evens it. (A space was added before the <br> in markup so the
@@ -2250,12 +2229,9 @@ h1, h2, h3, h4, p { margin: 0; }
   margin: 0 auto;
   padding-bottom: 0;
 }
+/* joins the global .eyebrow (Oswald) system — dark-band color + spacing only */
 .faq__claim-eyebrow {
-  font-family: var(--f-head);
-  text-transform: uppercase;
-  font-size: clamp(12px, 1.25vw, 15px);
-  letter-spacing: 0.22em;
-  color: #6a98f0; /* was --volt-blue #4884ea = 4.36:1 on dark, fails AA at the 12px floor; #6a98f0 = 5.57:1 */
+  color: #6a98f0; /* --volt-blue #4884ea = 4.36:1 on dark fails AA; #6a98f0 = 5.57:1 */
   margin-bottom: 14px;
 }
 .faq__claim-lead {
@@ -2283,7 +2259,7 @@ h1, h2, h3, h4, p { margin: 0; }
   display: grid;
   gap: 14px;
 }
-/* card matches the funnel callouts (.fn__co): warm near-black + blue hairline */
+/* warm near-black card + blue hairline (matches the dark-band component look) */
 .faq__item {
   background: #1d1c1a;
   border: 1px solid rgba(95,130,235,0.55);
@@ -3034,7 +3010,6 @@ h1, h2, h3, h4, p { margin: 0; }
   color: var(--volt-blue-deep);
   margin: 2px 0 8px;
 }
-.offer__then { font-size: 16.5px; font-weight: 600; color: var(--ink); }
 /* one tight direct-response paragraph — bold hooks carry the skim, muted
    body recedes, italic serif closes it out. center-aligned to match the
    rest of the card. */
@@ -3110,63 +3085,6 @@ h1, h2, h3, h4, p { margin: 0; }
   margin: 0;
 }
 
-/* ===== GUARANTEES ===== */
-.guarantees { padding: 10px 0 70px; }
-.g__title {
-  text-align: center;
-  font-family: var(--f-head);
-  text-transform: uppercase;
-  font-size: clamp(28px, 3.8vw, 50px);
-  color: var(--ink);
-  margin-bottom: 34px;
-}
-.g__grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 22px;
-  max-width: 980px;
-  margin: 0 auto 30px;
-}
-.g__card {
-  background: #fdfbf5;
-  border: 2px solid var(--volt-blue-bright);
-  border-radius: 16px;
-  box-shadow: 0 6px 16px rgba(40,35,20,0.08);
-  padding: 22px 26px 24px;
-  position: relative;
-}
-.g__num {
-  font-family: var(--f-mono);
-  font-size: 13px;
-  letter-spacing: 0.04em;
-  color: #6a6354;
-  display: block;
-  margin-bottom: 8px;
-}
-.g__name {
-  font-family: var(--f-head);
-  text-transform: uppercase;
-  font-size: 17px;
-  line-height: 1.2;
-  color: var(--ink);
-  margin-bottom: 10px;
-}
-.g__body { font-size: 14.5px; line-height: 1.5; color: #36352f; }
-.g__billing {
-  max-width: 980px;
-  margin: 0 auto;
-  background: #1d1c1a;
-  color: #f3ecdf;
-  border-radius: 18px;
-  padding: 22px 30px;
-  text-align: center;
-}
-.g__billing p { font-size: 16px; line-height: 1.6; }
-.g__billing b { color: #fff; }
-.g__billing em { color: var(--volt-blue-bright); font-style: italic; }
-@media (max-width: 760px) {
-  .g__grid { grid-template-columns: 1fr; }
-}
 /* long menu rows start colliding with the dotted leaders below ~860 */
 @media (max-width: 860px) {
   .offer__menu li { flex-wrap: wrap; }
@@ -3253,10 +3171,10 @@ h1, h2, h3, h4, p { margin: 0; }
   }
   /* the absolutely-positioned portrait outgrows the capped copy column past
      ~1520 and hangs into the real-results title. Grow the wrap with the art:
-     art top + art height (width × 885/914) − the 120px section padding the
+     art top + art height (width × 750/914) − the 120px section padding the
      art bottom is allowed to hang into (its exact position at 1440), keeping
      the title 30px clear of the portrait at every width */
-  .dialed__wrap { min-height: calc(clamp(36px, 5.5vw, 106px) + clamp(580px, calc(44vw - 54px), 791px) * 0.9683 - 120px); }
+  .dialed__wrap { min-height: calc(clamp(36px, 5.5vw, 106px) + clamp(580px, calc(44vw - 54px), 791px) * 0.8206 - 120px); }
   /* the head/bubble are %-of-container — freeze them at their 1920 widths
      (60% / 57% of the 1568px content box) so they stop growing with the
      viewport once the type freezes */
@@ -3322,7 +3240,6 @@ h1, h2, h3, h4, p { margin: 0; }
   /* 6vw - 10.4px = the current 76px cap at 1440; 105px = the value @1920 */
   .offer__big { font-size: clamp(100px, calc(8vw - 13px), 140px); }
   /* 1.15vw = the current 16.5px at 1440 */
-  .offer__then { font-size: clamp(16.5px, 1.15vw, 22px); }
   .offer__copy {
     /* 37.5vw = the current 540px cap at 1440; 720px = the value @1920 */
     max-width: clamp(540px, 37.5vw, 720px);
