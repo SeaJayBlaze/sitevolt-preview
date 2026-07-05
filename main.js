@@ -182,6 +182,9 @@ document.addEventListener("submit", (e) => {
     return;
   }
   vid.muted = true; // defensive: autoplay policy needs it even with the attr
+  // clip ends frozen on its last frame (no loop); crossfade the crisp
+  // real-screenshot end frame (.hero__vidend) over the soft AI render
+  vid.addEventListener("ended", () => box.classList.add("is-done"), { once: true });
   // sink NOW, at parse time (script sits at end of body, before first paint),
   // so there's no flash of the settled box before the entrance. The hero's
   // overflow:hidden + the rip (z 4) hide the sunk portion.
@@ -199,7 +202,12 @@ document.addEventListener("submit", (e) => {
       requestAnimationFrame(() => box.classList.add("is-in"))
     ); // rise
     setTimeout(() => {
-      vid.play().catch(() => {}); // blocked autoplay ⇒ static poster, fine
+      vid.play().catch(() => {
+        // blocked autoplay (iOS Low Power Mode, data saver): don't strand the
+        // visitor on the "old ugly site" first frame — show the payoff frame
+        // (poster swaps live; the poster stays visible until playback starts)
+        vid.poster = "assets/hero-anim-still.jpg";
+      });
     }, 950);
   };
   if ("IntersectionObserver" in window) {

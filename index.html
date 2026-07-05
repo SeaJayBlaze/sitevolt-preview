@@ -105,9 +105,14 @@
              the box up from behind the rip, then plays once. -->
         <div class="hero__vidbox" data-hero-anim aria-hidden="true">
           <video class="hero__vid" muted playsinline preload="metadata"
-                 poster="assets/hero-anim-poster.jpg" width="480" height="816">
+                 poster="assets/hero-anim-poster.jpg" width="736" height="1232">
             <source src="assets/hero-anim.mp4" type="video/mp4" />
           </video>
+          <!-- crisp payoff: the real composited screenshot (same frame the
+               clip's last_image was pinned to) crossfades over the frozen AI
+               frame on ended — the screen text stays razor sharp at rest -->
+          <img class="hero__vidend" src="assets/hero-anim-end.jpg" alt=""
+               width="736" height="1227" loading="lazy" decoding="async" />
         </div>
       </div>
     </div>

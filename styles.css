@@ -133,6 +133,11 @@ a:focus-visible, button:focus-visible, input:focus-visible {
    the same boundary over the tear strip itself */
 .bp-band::before { background-position: left bottom; }
 .bp-band::after  { background-position: right bottom; }
+/* hero's right column counts its phase from the bottom too: the video box
+   repaints the column slice it overlaps (.hero__vidbox::before) and its only
+   fixed reference to the hero is the bottom edge — bottom-anchoring both
+   makes their tile phases meet seamlessly at the box's top/bottom cuts */
+.hero::after { background-position: right bottom; }
 /* blueprint border columns continue UP over the cream tear strip that opens
    the band (trusted panel's torn-bottom), ripped along its contour — same
    idea as .dd__rip-borders but the tear opens upward, so the mask is the
@@ -480,7 +485,11 @@ h1, h2, h3, h4, p { margin: 0; }
 .funnel.section:empty { min-height: 360px; }
 
 /* ===== HERO (§2) ===== */
-.hero { padding: 52px 0 190px; overflow: hidden; }
+.hero { padding: 52px 0 190px; overflow: hidden; overflow: clip; }
+/* clip, not hidden: the video box sinks ~104px past the section bottom at
+   <=640 (sleeve into the rip), which makes a hidden hero PROGRAMMATICALLY
+   scrollable — a stray scrollIntoView/focus jump would shift the whole hero
+   content up and expose the box below the tear. clip can't be scrolled. */
 /* torn-paper rip forming the hero's bottom edge (scraps taped along the tear) */
 .hero__rip {
   position: absolute;
@@ -673,16 +682,18 @@ h1, h2, h3, h4, p { margin: 0; }
   position: relative;
   z-index: 1;            /* below .hero__rip (z 4) so the tear overlaps it */
 }
-/* Hero animation box. The video is an opaque rectangle (white bg), so unlike
-   the old transparent Tesla webp it must NOT overlap the blueprint border
-   column — white-knocked-to-cream would erase the column art. Right edge sits
-   4px inside the column's inner edge (gap = --border-w + 4px from the
-   viewport, converted to cell coordinates like the old rule). */
+/* Hero animation box. The video is an opaque rectangle (white bg) multiplied
+   over the box's flat --paper backdrop, so overlapping the blueprint column
+   would normally erase it (white knocks to cream, not to the column art).
+   The box runs to the viewport edge anyway — the sleeve reads as reaching in
+   from off-page OVER the blueprint — and ::before repaints the column slice
+   the box covers, phase-matched to the real .hero::after column, so the
+   multiply chain prints the arm onto it instead of erasing it. */
 .hero__vidbox {
   position: absolute;
-  right: calc(-1 * (var(--pad-hero) - var(--border-w)));  /* right edge flush
-     with the column's inner edge: any gap leaves a cream sliver where the
-     sleeve runs off the frame's bottom-right corner */
+  right: calc(-1 * var(--pad-hero));  /* right edge flush with the viewport
+     edge: the frame cuts the sleeve at its right border, so the cut must sit
+     off-page, and the overlapped column is repainted by ::before below */
   bottom: -130px;        /* sleeve bottom clipped by the torn rip (z 4) */
   /* portrait clip (480x816). The box is OPAQUE (white knocks to flat cream),
      so unlike the transparent Tesla webp it must clear the copy entirely:
@@ -698,12 +709,33 @@ h1, h2, h3, h4, p { margin: 0; }
   overflow: hidden;
   /* flat cream matching the body: the multiply backdrop for the video */
   background: var(--paper);
-  /* entrance: JS (data-hero-anim) sinks the box 110px with .is-prep, then
-     .is-in rises it from behind the torn rip; then the clip plays once */
-  transition: transform 0.9s cubic-bezier(0.22, 0.9, 0.3, 1);
 }
-.hero__vidbox.is-prep { transform: translateY(110px); }
-.hero__vidbox.is-in { transform: translateY(0); }
+/* the column slice the box overlaps, repainted as part of the multiply
+   backdrop so the arm prints OVER the blueprint. Phase counts from the hero's
+   bottom edge like .hero::after: box bottom sits 10.88vw - 34px above the
+   hero bottom (padding-bottom 10.88vw + 96px, bottom -130px), so anchoring
+   the tile 10.88vw - 34px below the box bottom lands it exactly on the hero
+   bottom — real and repainted columns tile in the same phase. */
+.hero__vidbox::before {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0; right: 0;
+  width: var(--border-w);   /* clipped to the column: the raw tile renders
+                               wider than --border-w at narrow viewports */
+  background-image: url("assets/blueprint-border-right.webp");
+  background-repeat: repeat-y;
+  background-size: auto var(--tile-h);
+  background-position: right bottom calc(34px - 10.88vw);
+}
+/* entrance: JS (data-hero-anim) sinks the MEDIA 110px with .is-prep, then
+   .is-in rises it from behind the torn rip; then the clip plays once. The
+   transform lives on the video layers, not the box, so the repainted column
+   slice (::before) stays locked to the real column during the slide — the
+   media rises over a stable page backdrop. */
+.hero__vidbox.is-prep .hero__vid,
+.hero__vidbox.is-prep .hero__vidend { transform: translateY(110px); }
+.hero__vidbox.is-in .hero__vid,
+.hero__vidbox.is-in .hero__vidend { transform: translateY(0); }
 /* Wide screens: past ~1520 the box clears the headline HORIZONTALLY, so it
    may rise beside it and the height cap no longer binds — the frame's top is
    empty white anyway and the hero's overflow:hidden clips whatever pokes past
@@ -715,6 +747,9 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 .hero__vid {
   display: block;
+  position: relative;   /* paints above the ::before column repaint (tree
+                           order among positioned siblings) — static in-flow
+                           content would slip underneath it */
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -725,10 +760,35 @@ h1, h2, h3, h4, p { margin: 0; }
      the surrounding page (multiply of 250-white leaves a visible 2% patch) */
   filter: brightness(1.02);
   mix-blend-mode: multiply;
+  /* fades OUT under .hero__vidend on ended: multiply never occludes, so the
+     frozen AI frame would ghost through the crisp overlay if left visible */
+  transition: opacity 0.5s ease, transform 0.9s cubic-bezier(0.22, 0.9, 0.3, 1);
 }
+.hero__vidbox.is-done .hero__vid { opacity: 0; }
+/* crisp payoff overlay: the compose.mjs end frame (real screenshot warped
+   onto the phone — the same image the clip's last_image was pinned to), so
+   the resting state shows sharp screen text instead of the AI render. Same
+   blend/filter chain as the video so the white bg knocks out identically. */
+.hero__vidend {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 100%;
+  filter: brightness(1.02);
+  mix-blend-mode: multiply;
+  opacity: 0;
+  transition: opacity 0.5s ease, transform 0.9s cubic-bezier(0.22, 0.9, 0.3, 1);
+  pointer-events: none;
+}
+.hero__vidbox.is-done .hero__vidend { opacity: 1; }
 @media (prefers-reduced-motion: reduce) {
-  .hero__vidbox { transition: none; }
-  .hero__vidbox.is-prep { transform: none; }
+  .hero__vid { transition: none; }
+  .hero__vidbox.is-prep .hero__vid,
+  .hero__vidbox.is-prep .hero__vidend { transform: none; }
+  /* no motion => never plays; show the payoff frame outright */
+  .hero__vidend { opacity: 1; transition: none; }
 }
 
 /* keep the bullets as a 2x2 block of single-line items (matches target);
@@ -770,24 +830,30 @@ h1, h2, h3, h4, p { margin: 0; }
      them anyway (see: mobile relative overrides keeping base offsets) */
   .hero__art { order: 0; align-self: auto; max-width: none; margin: 0; }
   .hero__vidbox {
-    position: static;
+    /* relative, not static: in-flow like static, but keeps the box a
+       containing block for the .hero__vidend inset overlay */
+    position: relative;
     right: auto; bottom: auto;
     width: min(340px, 78vw);
     /* The frame cuts the sleeve at its right and bottom edges, so the arm
        can't float mid-cream in the stacked flow — anchor it like desktop:
-       - flush right into the border column (margin-right unwinds the
-         container's pad-hero down to the column's inner edge), so the
-         sleeve reads as reaching in from off-page;
+       - flush right to the viewport edge (margin-right unwinds the
+         container's full pad-hero), sleeve over the blueprint column with
+         the cut off-page; ::before repaints the overlapped column slice;
        - bottom sunk into the torn rip: hero padding-bottom is
          10.88vw + 96px and the rip is 10.88vw tall, so -140px puts the
          sleeve ~44px below the rip's top edge at every stacked width —
          the tear clips the arm exactly like desktop. */
-    margin: 24px calc(var(--border-w) - var(--pad-hero)) -140px auto;
+    margin: 24px calc(-1 * var(--pad-hero)) -140px auto;
     /* crop a touch harder when stacked (~10.6% off the top vs 9%): flow
        height matters here. Phone top edge sits at ~13% of the frame — don't
        go past 48/72 or the bezel clips */
     aspect-ratio: 48 / 73;
   }
+  /* stacked column-repaint phase: box bottom = hero content bottom + 140px
+     (negative margin) = hero bottom - (10.88vw + 96px) + 140px, so the hero
+     bottom sits 10.88vw - 44px below the box bottom */
+  .hero__vidbox::before { background-position: right bottom calc(44px - 10.88vw); }
   /* the CTA arrow points at the pill FROM the art's gap; in single column
      it has no referent and strands in dead space to the pill's right */
   .hero__arrow { display: none; }
@@ -2691,7 +2757,14 @@ h1, h2, h3, h4, p { margin: 0; }
 /* at phone width the art now sits BELOW the copy, tucked into the bottom rip:
    trim the bottom padding so Tesla's lower edge meets the tear (like desktop)
    instead of leaving a cream gap above it */
-@media (max-width: 640px) { .hero:has(.hero__why) { padding-bottom: 36px; } }
+@media (max-width: 640px) {
+  .hero:has(.hero__why) { padding-bottom: 36px; }
+  /* the 36px padding moves the video box relative to the hero bottom, so the
+     column-repaint phase moves with it: box bottom = hero bottom - 36px +
+     140px (negative margin) — the hero bottom sits 104px ABOVE the box
+     bottom here, not below it like the wider stacked band */
+  .hero__vidbox::before { background-position: right bottom 104px; }
+}
 /* Phone: the 52px desktop top padding leaves a big cream gap under the nav —
    tighten it so the headline sits closer to the bar. */
 @media (max-width: 640px) { .hero { padding-top: 24px; } }
