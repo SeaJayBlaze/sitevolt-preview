@@ -50,7 +50,7 @@
      composition instead. Text elements pick from these tokens — don't mint
      new clamp() sizes. */
   --fs-h1:        clamp(34px, 4.3vw, 83px);
-  --fs-h2:        clamp(30px, 3.9vw, 50px);
+  --fs-h2:        clamp(27.6px, 3.9vw, 50px);
   --fs-h3:        clamp(26px, 3.1vw, 40px);
   --fs-h4:        clamp(18px, 1.56vw, 22px);
   --fs-lead-hero: clamp(15px, 1.9vw + 6px, 22px);
@@ -469,8 +469,8 @@ h1, h2, h3, h4, p { margin: 0; }
 
 /* ===== HERO (§2) ===== */
 .hero { padding: 52px 0 190px; overflow: hidden; overflow: clip; }
-/* clip, not hidden: the video box sinks ~104px past the section bottom at
-   <=640 (sleeve into the rip), which makes a hidden hero PROGRAMMATICALLY
+/* clip, not hidden: the video box sinks 60px past the section bottom at
+   <=768 (sleeve into the rip), which makes a hidden hero PROGRAMMATICALLY
    scrollable — a stray scrollIntoView/focus jump would shift the whole hero
    content up and expose the box below the tear. clip can't be scrolled. */
 /* torn-paper rip forming the hero's bottom edge (scraps taped along the tear) */
@@ -808,11 +808,12 @@ h1, h2, h3, h4, p { margin: 0; }
 @media (max-width: 540px) {
   .hero__bullets { gap: 11px 22px; }
   .hero__bullets li { font-size: 14px; white-space: nowrap; }
-  /* The nowrap 2-line title caps at 8.4vw-5.2px on phones while the sub sits
-     on its 15px clamp floor, compressing the head:lead ratio to ~1.8:1 (system
-     target ~2.5:1) — the paragraph outweighed the headline. 14px joins the sub
-     to the bullets' tier and restores ~2:1 at 390px / ~2.5:1 at 480px. */
-  .hero__sub { font-size: 14px; }
+  /* Head:lead tension: the nowrap 2-line title caps at 8.4vw-5.2px here, so a
+     big sub outweighs the headline (system target ~2.5:1). But 14px dropped the
+     hero lead BELOW the 15px mobile body tier (testimonials, case-study copy,
+     FAQ answers) — the page's #1 message read smallest. 15px = body-tier floor:
+     ratio ~1.85:1 at 390px / ~2.3:1 at 480px, and no 15→16.3px jump at 541. */
+  .hero__sub { font-size: 15px; }
 }
 
 /* Single-column hero comes EARLIER than the old art layout (860): the video
@@ -1046,6 +1047,10 @@ h1, h2, h3, h4, p { margin: 0; }
   font-size: var(--fs-h4);   /* kicker tracks the h1-tier title at the shared sub-head size */
   line-height: 1.18;
   letter-spacing: 0.01em;
+  /* the head's width caps (72% base / min(60%,941px) ≥1441) cross the fluid
+     font's one-line measure at 1024/1280/1520, stranding "SELLS" alone on
+     line 2 — balance splits the wrap evenly whenever it happens */
+  text-wrap: balance;
   /* Wrap the kicker in the clear zone left of the tucked portrait so the copy
      never runs under the image; the head reverts to full width once stacked. */
   max-width: 85%;
@@ -1061,7 +1066,10 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 .dialed__art {
   position: absolute;
-  top: clamp(36px, 5.5vw, 84px);
+  /* the portrait canvas lost its tesla coil (which used to fill the band above
+     the circle), so the circle rides up beside the title/kicker — the old
+     5.5vw offset left a dead cream void across the section's top right */
+  top: clamp(16px, 2.2vw, 32px);
   right: -10px;
   width: clamp(340px, 44vw, 580px);
   z-index: 2;
@@ -1177,7 +1185,9 @@ h1, h2, h3, h4, p { margin: 0; }
     top: -10%;
   }
   /* top pad = 66px hidden under the overlapping avatar + a small gap to the hook */
-  .dialed__bubble { order: 3; width: auto; margin-top: 0; padding: 74px 10px 38px; }
+  /* side pad scales up through the stacked range: 10px read as text-on-the-
+     border at 700–820 where the card is wide and the vertical padding deep */
+  .dialed__bubble { order: 3; width: auto; margin-top: 0; padding: 74px clamp(14px, 3vw, 26px) 38px; }
   .dialed__bubble::before { display: none; }
   /* the hook is the one display moment inside the bubble — a step up from the
      15px turn (weight alone wasn't separating them) with room between lines */
@@ -1219,7 +1229,7 @@ h1, h2, h3, h4, p { margin: 0; }
   font-family: var(--f-head);
   font-weight: 400;   /* true Archivo Black — no synthetic bold (h2 UA default) */
   text-transform: uppercase;
-  font-size: var(--fs-h3);
+  font-size: var(--fs-h2);
   /* display leading like the sibling section titles (.proc__title, .cs__head);
      without this the body's 1.5 leaks in and gaps the two-line phone wrap */
   line-height: 1.05;
@@ -1230,13 +1240,15 @@ h1, h2, h3, h4, p { margin: 0; }
      No-op on desktop where the title is forced single-line (nowrap, ≥821px below). */
   text-wrap: balance;
 }
-/* single line on desktop, as in the mockup */
-@media (min-width: 821px) { .rr__title { white-space: nowrap; } }
-/* phone: --fs-h3's 3.1vw term is dead this small (floored at 26px), which
-   leaves the title undersized next to .dialed__title/.proc__title — retrack
-   with the viewport. 7.2vw keeps the longer balanced line ("REAL BIG
-   RESULTS.", ~11.2em ink) inside the --pad-hero gutters down to ~360px. */
-@media (max-width: 820px) { .rr__title { font-size: clamp(26px, 7.2vw, 34px); } }
+/* single line on wide desktop, as in the mockup — at the h2-tier 50px the
+   title's ~20.2em ink only clears the gutters from ~1370px up; below that
+   balance evens the 2-line wrap ("REAL BIG BRANDS, / REAL BIG RESULTS.") */
+@media (min-width: 1380px) { .rr__title { white-space: nowrap; } }
+/* phone: --fs-h2's 3.9vw term is dead this small (floored at 27.6px) —
+   retrack with the viewport. 7.08vw hits the shared 27.6px mobile heading
+   tier at 390 and keeps the longer balanced line ("REAL BIG RESULTS.",
+   ~11.2em ink) inside the --pad-hero gutters down to ~360px. */
+@media (max-width: 820px) { .rr__title { font-size: clamp(26px, 7.08vw, 34px); } }
 /* "REAL BIG TALK. WE KNOW." hand-off heading — closes the cream band under
    the phones (moved down from the dark testimonials shelf), sitting on the
    16px shelf the section's bottom padding keeps above the tear. The 72px top
@@ -1391,7 +1403,9 @@ h1, h2, h3, h4, p { margin: 0; }
   /* stacked: the 11.5vw term keeps tracking the rip height so the cards sit
      just under the tear's dark underside; the sticker rides up over the tear
      ink instead of demanding a deep shelf (user-approved overlap) */
-  .testimonials { padding-top: calc(28px + 11.5vw); }
+  /* bottom: the desktop 168px shelf reads as a ~130px dead black band above
+     the cream tear once the cards stack — track the rip height instead */
+  .testimonials { padding-top: calc(28px + 11.5vw); padding-bottom: calc(48px + 11.5vw); }
 }
 /* charcoal page-rip forming the band's top edge — the SAME tear as the hero
    rip over the trusted band (and case-b's cs__rip): asset pre-baked to --dark
@@ -1578,24 +1592,22 @@ h1, h2, h3, h4, p { margin: 0; }
 .proc__intro { position: relative; padding: 72px 0 56px; }
 .proc__intro-inner { text-align: center; }
 .proc__title {
-  /* poster band headline like .dd__title/.fcta__title (Anton) — ratified
-     2026-07-05 (DESIGN.md): the section's giant Anton numerals set the
-     poster voice, and Archivo at h2 breaks the 2-line phone title */
-  font-family: var(--f-display);
+  /* joined the Archivo Black h2 system (was an Anton poster clamp) */
+  font-family: var(--f-head);
   font-weight: 400;
   text-transform: uppercase;
   color: var(--ink);
-  /* 54px floor keeps it continuous with the phone override's 54px cap at 821;
-     5vw hits the 96px cap at 1920 */
-  font-size: clamp(54px, 5vw, 96px);
-  line-height: 1.02;
-  letter-spacing: 0.01em;
+  font-size: var(--fs-h2);
+  line-height: 1.04;
+  letter-spacing: -0.01em;
 }
-/* phone: track the viewport so "YOU JUST APPROVE IT." (8.23em ink in Anton,
-   the longer forced line) always holds ONE line inside the --pad-hero gutters:
-   fits (vw - 60px) down to 320 with ~4% slack. No stacked "APPROVE IT." */
 @media (max-width: 820px) {
-  .proc__title { font-size: clamp(30px, 11.6vw - 7px, 54px); }
+  /* the desktop <br> split's forced lines ("WE DO THE WORK." ≈ 282px ink at
+     the shared 27.6px tier) fit phones ≥ ~350px but overflow below that —
+     drop the hard break and let balance pick the wrap, so ≥350px still gets
+     the same 2-line split and narrower screens degrade to a balanced 3. */
+  .proc__title br { display: none; }
+  .proc__title { text-wrap: balance; }
   /* trim the intro's 72px desktop headroom — under the tear it reads as a
      dead band at phone widths — and its 56px footroom, which was sized for
      the desktop 4-across grid and reads as a dead band above step 1 */
@@ -1763,7 +1775,7 @@ h1, h2, h3, h4, p { margin: 0; }
   font-family: var(--f-head);
   font-weight: 400;   /* true Archivo Black — no synthetic bold (h2 UA default) */
   text-transform: uppercase;
-  font-size: var(--fs-h3);
+  font-size: var(--fs-h2);
   line-height: 1.04;
   color: var(--ink);
   margin-bottom: 14px;
@@ -1859,12 +1871,11 @@ h1, h2, h3, h4, p { margin: 0; }
      @375) and every item wraps with a stranded last word (widow). 2-col returns
      ≥881px where the body column is wide enough. */
   .cs__impl { grid-template-columns: 1fr; grid-auto-flow: row; grid-template-rows: none; }
-  /* case heads: --fs-h3 floors at 26px here, undersizing them next to the sibling
-     section titles (.fn__title 30px, .rr__title ~28px, .dialed__title 34px @390).
-     Retrack with the viewport to the h2-tier 30px; balance holds each to a 2-line
-     wrap (copy is length-tuned for it: "DATED TO DIALED / IN 14 DAYS",
-     "GROWERS, BAKERS, / BARBERS, AND YOU?"). */
-  .case-study .cs__head { font-size: clamp(21px, 9.6vw - 7.4px, 30px); }
+  /* case heads: retrack with the viewport to the shared 27.6px @390 mobile
+     heading tier (matches .rr__title/.fn__title/.hero__title); balance holds
+     each to a 2-line wrap (copy is length-tuned for it: "DATED TO DIALED /
+     IN 14 DAYS", "GROWERS, BAKERS, / BARBERS, AND YOU?"). */
+  .case-study .cs__head { font-size: clamp(21px, 8.5vw - 5.6px, 30px); }
   /* case-c head holds ONE line ("LOOK 10X YOUR SIZE"): its ink runs 12.06×
      the font size, so the shared tier overflows the cream band's ~(100vw−60px)
      body column below ~460px. 8vw−5px keeps ~4% slack through the whole range
@@ -1966,7 +1977,7 @@ h1, h2, h3, h4, p { margin: 0; }
 .case-study--dark .cs__impl-head { color: var(--paper); }
 .case-study--dark .cs__impl li { color: #d8d5cc; }
 /* dot bullets + blue BEFORE/AFTER labels on the dark case (mockup) */
-.case-study--dark .cs__impl .chk { width: 9px; height: 9px; background: var(--volt-blue-bright); }
+.case-study--dark .cs__impl .chk { width: 9px; height: 9px; background: var(--volt-blue-bright); margin-top: 6px; } /* the li's align-items:start pins the 9px dot to the line-box top; 6px re-centers it on the 21px first line (the 18px check icons in case-a/c center on their own) */
 .case-study--dark .cs__impl .chk::after { content: none; }
 /* BEFORE/AFTER labels on the dark band: --volt-blue-bright (#2f6bff) is only 3.53:1 on
    #232220 and the 18px Archivo Black labels are just under the WCAG large-text bold
@@ -2052,7 +2063,7 @@ h1, h2, h3, h4, p { margin: 0; }
   color: var(--paper);
   text-align: center;
 }
-.fn__sub { font-size: var(--fs-lead); margin: 12px 0 0; color: var(--paper); text-align: center; }
+.fn__sub { font-size: var(--fs-lead); margin: 12px 0 0; color: var(--paper); text-align: center; text-wrap: balance; } /* balance: the centered measure strands "a sale"/"sale" alone on the last line at 320/768/900 */
 /* cream hand-drawn scribble under "foundation" (same stroke as .dd__ul) */
 .fn__sub-u { display: inline-block; position: relative; font-weight: 700; }
 .fn__sub-u::after {
@@ -2139,9 +2150,25 @@ h1, h2, h3, h4, p { margin: 0; }
    440px label column, so compact the stack — a shorter bracket span shrinks
    the pinned funnel with it, and both sides regain clearance */
 @media (min-width: 821px) and (max-width: 1080px) {
-  .fn__diagram { --fn-lgap: 190px; }
-  .fn__stages { gap: 28px; }
-  .fn__stage-d { font-size: 15px; }
+  /* label column ~230px at 900 broke "FIRST LOOK:" onto two lines and every
+     desc onto three; a tighter gap + 14px descs hold labels to one line and
+     descs to two, and the shorter stack shrinks the pinned funnel with it */
+  .fn__diagram { --fn-lgap: clamp(145px, 33vw - 142px, 190px); }
+  .fn__stages { gap: 24px; }
+  .fn__stage-d { font-size: 14px; }
+}
+/* narrowest slice of that band: --pad-hero (100px border columns) leaves the
+   label column only ~165-185px, so the h4-tier labels break onto two lines
+   and the rim rides into the brackets. Scale the whole stack down a notch —
+   the pinned funnel shrinks with it and both sides recover — and let the
+   gap slope run under the 145px floor (the smaller ink half-width no longer
+   needs it) */
+@media (min-width: 821px) and (max-width: 880px) {
+  .fn__diagram { --fn-lgap: calc(33vw - 142px); }
+  .fn__stage { font-size: 18px; }
+  .fn__stage-d { font-size: 13px; }
+  .fn__stages { gap: 16px; }
+  .fn__stages li { padding-left: 36px; }
 }
 @media (max-width: 820px) {
   /* one row: a big funnel bleeding half off the LEFT viewport edge, stage
@@ -2236,6 +2263,7 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 .faq__claim-lead {
   font-family: var(--f-head);
+  font-weight: 400;   /* true Archivo Black — the parent h2's UA bold was faux-bolding it (family has no 700) */
   text-transform: uppercase;
   font-size: var(--fs-h2);
   line-height: 0.98;
@@ -2245,6 +2273,7 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 .faq__claim-sub {
   font-family: var(--f-head);
+  font-weight: 400;   /* true Archivo Black — no synthetic bold (inherited h2 700) */
   text-transform: uppercase;
   font-size: var(--fs-h4);
   line-height: 1.1;
@@ -2537,7 +2566,7 @@ h1, h2, h3, h4, p { margin: 0; }
   z-index: 4;
 }
 .fcta__title {
-  font-family: var(--f-display);
+  font-family: var(--f-head);
   font-weight: 400;
   text-transform: uppercase;
   color: var(--ink);
@@ -2572,7 +2601,7 @@ h1, h2, h3, h4, p { margin: 0; }
   /* title spans the full ribbon; hands tuck into the lower corners below it */
   .fcta__ribbon { padding: calc(var(--torn-h, 42px) + 8px) 0 calc(var(--torn-h, 42px) + 56px); }
   .fcta__center { padding: 0 12px; }
-  .fcta__title { font-size: 30px; }
+  .fcta__title { font-size: 27.6px; }
   /* ride the hands up so the fists sit roughly on the "Cancel anytime" line
      (the ribbon's 98px bottom pad puts that line ~106px above its bottom
      edge) instead of hanging below the ribbon onto the black */
@@ -2739,13 +2768,37 @@ h1, h2, h3, h4, p { margin: 0; }
 /* at phone width the art now sits BELOW the copy, tucked into the bottom rip:
    trim the bottom padding so the art's lower edge meets the tear (like
    desktop) instead of leaving a cream gap above it */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .hero:has(.hero__why) { padding-bottom: 36px; }
-  /* the 36px padding moves the video box relative to the hero bottom, so the
-     column-repaint phase moves with it: box bottom = hero bottom - 36px +
-     140px (negative margin) — the hero bottom sits 104px ABOVE the box
-     bottom here, not below it like the wider stacked band */
-  .hero__vidbox::before { background-position: right bottom 104px; }
+  /* Phone art sizing: the stacked-band sink (-162px - 2vw) was computed for
+     the 10.88vw + 96px hero padding — against this block's 36px padding it
+     drowned ~134px of sleeve below the tear, hiding the whole arm. The cut
+     only needs to sit below the rip's ink top: cut spans ~0.19*width
+     vertically, box bottom sits (96 - 36) = 60px below the hero bottom, so
+     the cut top lands 0.19*width - 60 above it — under the ~0.82*10.88vw
+     ink line at every width down to 320. Bigger frame + zero top margin
+     (the grid's 20px row gap is the spacer) + the max 48/72 crop (phone top
+     sits at 13% of frame; past 48/72 the bezel clips) close the cream gap
+     between the copy and the phone. */
+  .hero__vidbox {
+    width: min(430px, calc(100vw - var(--pad-hero)));
+    margin-top: 0;
+    /* right-flush against the VIEWPORT, not the grid track: below ~375 the
+       nowrap headline's min-content pushes the 1fr track wider than the
+       container content box, so a flat -pad-hero margin (track-relative)
+       overshoots the viewport edge and slides the box off its column
+       repaint. 100% reads the real track width, so the offset lands the
+       right edge at 100vw exactly; the width cap above keeps the leftover
+       auto margin-left >= 0 (it dies at 0 once over-constrained and the
+       box would anchor left instead). */
+    margin-right: calc(100% + var(--pad-hero) - 100vw);
+    margin-bottom: -96px;
+    aspect-ratio: 48 / 72;
+  }
+  /* column-repaint phase tracks the sink: box bottom sits 60px below the
+     hero bottom, so the tile anchored 60px up from the box bottom lands on
+     the hero bottom — same phase as the real .hero::after column */
+  .hero__vidbox::before { background-position: right bottom 60px; }
 }
 /* Phone: the 52px desktop top padding leaves a big cream gap under the nav —
    tighten it so the headline sits closer to the bar. */
@@ -2834,10 +2887,11 @@ h1, h2, h3, h4, p { margin: 0; }
   /* The forced two-line break makes "ON DUMBER THINGS" the longest line
      (~338px at 30px vs 281px for "DUMBER THINGS" alone), so the old 28px
      floor stranded "ON" on its own line below ~430px. The inner ramp
-     `8.8vw - 5.4px` tracks that line's width against the column (font ≈
-     30px × column/338px) so it stays one line down to 320, where the
-     floor bottoms out at 22px. Slope and 50px cap unchanged for wide. */
-  font-size: clamp(22px, max(3.9vw, min(30px, 8.8vw - 5.4px)), 50px);
+     `8.4vw - 5.15px` tracks that line's width against the column and hits
+     the shared 27.6px mobile heading tier at 390, staying one line down to
+     320, where the floor bottoms out at 22px. Slope and 50px cap unchanged
+     for wide. */
+  font-size: clamp(22px, max(3.9vw, min(30px, 8.4vw - 5.15px)), 50px);
   line-height: 1.04;
   letter-spacing: -0.01em;
   color: var(--ink);
@@ -2941,8 +2995,10 @@ h1, h2, h3, h4, p { margin: 0; }
 .rcpt__caption {
   font-family: var(--f-mono);
   /* single line, always: shrink below ~430px so the nowrap text never overflows the slip
-     (9px at 320 → 12.5px cap by ~430; ink width ≈ 24× font-size incl. letter-spacing) */
-  font-size: clamp(9px, 3.2vw - 1.24px, 12.5px);
+     (12.5px cap by ~430; ink ≈ 24× font-size incl. letter-spacing). 10px floor verified
+     @320: ink 240.4px vs 252px slip measure (~4.6% slack) — the old 9px floor was
+     legibility lost for nothing. Floor binds below ~351px. */
+  font-size: clamp(10px, 3.2vw - 1.24px, 12.5px);
   letter-spacing: 0.05em;
   color: #6a6354; /* was #8a8270 (3.13:1) — darkened to receipt brown for WCAG AA (4.89:1) */
   margin: 0;
@@ -3159,8 +3215,11 @@ h1, h2, h3, h4, p { margin: 0; }
      their own slopes to ~1930 (--fs-h1) or freeze at their caps (kicker/body),
      so no re-derived sizes here */
   .dialed__art {
-    /* old 84px cap only bound above 1527 — extend to 5.5vw @1920 */
-    top: clamp(36px, 5.5vw, 106px);
+    /* continues the base rule's raised offset (32px at 1440) and slopes DOWN
+       as the frame grows — the wider the viewport, the taller the void beside
+       the head, so the circle rises to keep pairing with the title+bubble
+       stack (32px @1441 → 8px @1920, frozen past it) */
+    top: clamp(8px, calc(104px - 5vw), 32px);
     /* 44vw - 54px = the current 580px cap at 1440; 791px = the value @1920,
        so the portrait keeps pace with the growing copy column */
     width: clamp(580px, calc(44vw - 54px), 791px);
@@ -3174,7 +3233,7 @@ h1, h2, h3, h4, p { margin: 0; }
      art top + art height (width × 750/914) − the 120px section padding the
      art bottom is allowed to hang into (its exact position at 1440), keeping
      the title 30px clear of the portrait at every width */
-  .dialed__wrap { min-height: calc(clamp(36px, 5.5vw, 106px) + clamp(580px, calc(44vw - 54px), 791px) * 0.8206 - 120px); }
+  .dialed__wrap { min-height: calc(clamp(8px, calc(104px - 5vw), 32px) + clamp(580px, calc(44vw - 54px), 791px) * 0.8206 - 120px); }
   /* the head/bubble are %-of-container — freeze them at their 1920 widths
      (60% / 57% of the 1568px content box) so they stop growing with the
      viewport once the type freezes */
@@ -3186,8 +3245,8 @@ h1, h2, h3, h4, p { margin: 0; }
   /* real-results: keep the title container tracking the viewport (the phones
      marquee is full-bleed on its own and doesn't need this) */
   .real-results > .container { max-width: none; }
-  /* h3 continuation (matches .cs__head): through the 40px cap at 1440, 55px @1920 */
-  .rr__title { font-size: clamp(40px, calc(3.1vw - 4.6px), 55px); }
+  /* h2 continuation (matches .cs__head): through the 50px cap at 1440, 69px @1920 */
+  .rr__title { font-size: clamp(50px, calc(3.9vw - 6px), 69px); }
 
   /* process: type froze at its ~1280 caps while the band, rip, and border
      columns keep growing. Re-cap the containers at the 1920-equivalent width
@@ -3264,6 +3323,9 @@ h1, h2, h3, h4, p { margin: 0; }
   /* funnel type joins the shared h2/lead/h4/body continuations now that it's
      on the token scale (was Oswald with its own caps, frozen past 1440) */
   .fn__title { font-size: clamp(50px, calc(3.9vw - 6px), 69px); }
+  /* h2 continuation for the process title (joined the tier from its old
+     Anton poster clamp) */
+  .proc__title { font-size: clamp(50px, calc(3.9vw - 6px), 69px); }
   .fn__sub { font-size: clamp(20px, 1.39vw, 27px); }
   .fn__stage { font-size: clamp(22px, 1.53vw, 29px); }
   .fn__stage-d { font-size: clamp(16px, 1.11vw, 21px); }
@@ -3277,7 +3339,7 @@ h1, h2, h3, h4, p { margin: 0; }
   /* h4 continuation (matches .cs__impl-head) */
   .cs__ba-labels { font-size: clamp(22px, 1.53vw, 29px); }
   /* 3.1vw - 4.6px = the current 40px cap at 1440; 55px = the value @1920 */
-  .cs__head { font-size: clamp(40px, calc(3.1vw - 4.6px), 55px); }
+  .cs__head { font-size: clamp(50px, calc(3.9vw - 6px), 69px); }
   /* headline doodles re-anchored in em (px ÷ the head's 40px at 1440) */
   .cs__head-bolt { width: 0.5em; height: 0.75em; top: -0.65em; }
   .cs__head-spark { width: 0.65em; height: 0.65em; top: -0.6em; left: -0.2em; }
@@ -3352,4 +3414,19 @@ h1, h2, h3, h4, p { margin: 0; }
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ===== ULTRA-WIDE (§: >2000px) ===== */
+/* The edge-anchored sections (hero copy tracks the left blueprint column,
+   hero sleeve / dialed portrait track the right viewport edge) keep drifting
+   apart after the type freezes at 1920 — at 2560 the copy and art read as
+   disconnected islands with ~1000px of empty cream between them. Cap those
+   compositions at a centered 2000px box and let only the sleeve keep
+   bleeding off the real viewport edge. */
+@media (min-width: 2001px) {
+  .hero > .container { max-width: 2000px; }
+  /* the sleeve must still run off-page: add back the centering gap the
+     capped container leaves to the viewport's right edge */
+  .hero__vidbox { right: calc(-1 * var(--pad-hero) - (100vw - 2000px) / 2); }
+  .dialed-in > .container { max-width: 2000px; }
 }
