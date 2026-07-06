@@ -92,11 +92,14 @@ function renderStatic(closed) {
   });
 
   $$("[data-spot-cta]").forEach((el) => {
+    if (!el.dataset.baseLabel) el.dataset.baseLabel = el.textContent;
     if (closed) {
       el.textContent = `GET FIRST CRACK AT ${NEXT} · JOIN THE LIST`;
       el.setAttribute("href", "#footer");
     } else {
-      el.textContent = `See What $1 Gets You`;
+      // each CTA keeps its own HTML label (hero "See…", final "BUILD…") —
+      // restore it when a closed month reopens
+      el.textContent = el.dataset.baseLabel;
     }
   });
 }
